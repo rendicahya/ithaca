@@ -16,7 +16,7 @@ describe('UCS', () => {
   })
 
   it('selects nodes in non-decreasing order of g(n)', () => {
-    const selects = steps.filter((s) => s.traceEntry?.startsWith('Select'))
+    const selects = steps.filter((s) => s.traceEntry?.key === 'ucs.select.trace')
     const gValues = selects.map((s) => s.state.gScore?.[s.state.currentNode!])
     for (let i = 1; i < gValues.length; i++) {
       expect(gValues[i]!).toBeGreaterThanOrEqual(gValues[i - 1]!)
@@ -24,7 +24,14 @@ describe('UCS', () => {
   })
 
   it('relaxes D to a cheaper cost via B before expanding it', () => {
-    const relax = steps.find((s) => s.traceEntry?.includes('Update D'))
+    const relax = steps.find((s) => {
+      const key = s.traceEntry?.key
+      if (key !== 'ucs.commit.trace.updateOnly' && key !== 'ucs.commit.trace.both') return false
+      const text = (s.traceEntry?.params?.list ?? s.traceEntry?.params?.updated) as
+        | string
+        | undefined
+      return text?.startsWith('D ')
+    })
     expect(relax).toBeDefined()
   })
 })

@@ -1,11 +1,14 @@
 <script lang="ts">
+  import { localeStore } from '@/lib/i18n/locale.svelte'
+  import type { Message } from '@/lib/i18n/translate'
+
   interface Props {
-    text: string
+    message: Message
     current: number
     total: number
   }
 
-  let { text, current, total }: Props = $props()
+  let { message, current, total }: Props = $props()
 </script>
 
 <div class="flex items-start gap-3 border-b border-border bg-card px-4 py-3">
@@ -14,5 +17,5 @@
   >
     {current}/{total}
   </span>
-  <p class="text-sm leading-snug text-foreground">{text}</p>
+  <p class="text-sm leading-snug text-foreground">{localeStore.t(message)}</p>
 </div>

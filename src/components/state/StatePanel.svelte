@@ -2,6 +2,8 @@
   import type { SearchAlgorithm, SearchState } from '@/lib/algorithms/search/types'
   import { Badge } from '@/components/ui/badge'
   import { Separator } from '@/components/ui/separator'
+  import { localeStore } from '@/lib/i18n/locale.svelte'
+  import { msg } from '@/lib/i18n/translate'
 
   import PriorityQueueView from './PriorityQueueView.svelte'
   import QueueView from './QueueView.svelte'
@@ -35,7 +37,7 @@
 <div class="flex h-full flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
   <section>
     <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      Current Node
+      {localeStore.t('state.currentNode')}
     </h3>
     {#if state.currentNode}
       <Badge variant="default" class="font-mono text-sm">{state.currentNode}</Badge>
@@ -48,7 +50,7 @@
 
   <section>
     <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      {algorithm.frontierLabel}
+      {localeStore.t(`algorithms.${algorithm.id}.frontierLabel`)}
     </h3>
     {#if algorithm.frontierKind === 'queue'}
       <QueueView items={state.frontier} />
@@ -63,7 +65,7 @@
 
   <section>
     <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      Visited ({state.visited.length})
+      {localeStore.t(msg('state.visited', { count: state.visited.length }))}
     </h3>
     {#if state.visited.length === 0}
       <span class="text-sm text-muted-foreground">—</span>
@@ -80,12 +82,14 @@
     <Separator />
     <section>
       <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        Final Path
+        {localeStore.t('state.finalPath')}
       </h3>
       <p class="font-mono text-sm font-semibold text-node-path">
         {state.path.join(' → ')}
       </p>
-      <p class="mt-1 text-xs text-muted-foreground">Path cost: {state.pathCost}</p>
+      <p class="mt-1 text-xs text-muted-foreground">
+        {localeStore.t(msg('state.pathCost', { cost: state.pathCost }))}
+      </p>
     </section>
   {/if}
 </div>

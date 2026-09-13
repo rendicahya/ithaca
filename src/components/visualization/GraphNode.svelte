@@ -17,6 +17,7 @@
 <script lang="ts">
   import { Handle, Position, type NodeProps } from '@xyflow/svelte'
 
+  import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
   let { data, sourcePosition = Position.Right, targetPosition = Position.Left }: NodeProps =
@@ -52,7 +53,7 @@
   </div>
   {#if d.isStart || d.isGoal}
     <span class="mt-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-      {d.isStart ? 'start' : 'goal'}
+      {d.isStart ? localeStore.t('node.start') : localeStore.t('node.goal')}
     </span>
   {/if}
 

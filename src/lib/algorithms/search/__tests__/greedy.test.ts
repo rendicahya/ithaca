@@ -19,7 +19,7 @@ describe('Greedy Best-First Search', () => {
 
   it('always selects the frontier node with smallest h(n), ignoring g(n)', () => {
     const selectOrder = steps
-      .filter((s) => s.traceEntry?.startsWith('Select'))
+      .filter((s) => s.traceEntry?.key === 'greedy.select.trace')
       .map((s) => s.state.currentNode)
     expect(selectOrder).toEqual(['S', 'B', 'E', 'G'])
   })

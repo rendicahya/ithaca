@@ -21,38 +21,38 @@ describe('BFS', () => {
 
   it('expands nodes in FIFO order', () => {
     const dequeueOrder = steps
-      .filter((s) => s.traceEntry?.startsWith('Dequeue'))
+      .filter((s) => s.traceEntry?.key === 'bfs.select.trace')
       .map((s) => s.state.currentNode)
     expect(dequeueOrder).toEqual(['S', 'A', 'B', 'C', 'D', 'E', 'F', 'G'])
   })
 
   it('never dequeues the same node twice', () => {
     const dequeueOrder = steps
-      .filter((s) => s.traceEntry?.startsWith('Dequeue'))
+      .filter((s) => s.traceEntry?.key === 'bfs.select.trace')
       .map((s) => s.state.currentNode)
     expect(new Set(dequeueOrder).size).toBe(dequeueOrder.length)
   })
 
-  it('produces a step for backward/forward stepping with a defined pseudocode line', () => {
+  it('produces a step for backward/forward stepping with a defined pseudocode line and message key', () => {
     for (const step of steps) {
       expect(step.activePseudocodeLine).toBeGreaterThan(0)
-      expect(step.explanation.length).toBeGreaterThan(0)
+      expect(step.explanation.key.length).toBeGreaterThan(0)
     }
   })
 
   it('explicitly checks every dequeued non-goal node against the goal', () => {
     const checked = steps
-      .filter((s) => s.traceEntry?.startsWith('Check'))
+      .filter((s) => s.traceEntry?.key === 'bfs.checkNotGoal.trace')
       .map((s) => s.state.currentNode)
     // Every node except the goal itself should get an explicit "not the goal" check.
     expect(checked).toEqual(['S', 'A', 'B', 'C', 'D', 'E', 'F'])
   })
 
   it('highlights newly discovered children as dashed expansion edges before committing them', () => {
-    const expandSteps = steps.filter((s) => s.traceEntry?.startsWith('Expand'))
+    const expandSteps = steps.filter((s) => s.traceEntry?.key === 'bfs.expand.trace')
     expect(expandSteps.some((s) => s.state.expandingEdgeIds.length > 0)).toBe(true)
     // The highlight is cleared again once the children are committed to the frontier.
-    const enqueueSteps = steps.filter((s) => s.traceEntry?.startsWith('Enqueue'))
+    const enqueueSteps = steps.filter((s) => s.traceEntry?.key === 'bfs.commit.trace')
     expect(enqueueSteps.every((s) => s.state.expandingEdgeIds.length === 0)).toBe(true)
   })
 })

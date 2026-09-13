@@ -1,3 +1,4 @@
+import { msg } from '@/lib/i18n/translate'
 import type { Graph, NodeId } from '@/lib/graph/types'
 import { neighborsOf } from '@/lib/graph/types'
 
@@ -39,8 +40,8 @@ export function runBfs(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState(state),
     activePseudocodeLine: 1,
-    explanation: `Start at ${graph.start}. It is placed in the frontier queue.`,
-    traceEntry: `Initialize frontier with ${graph.start}`,
+    explanation: msg('bfs.init', { start: graph.start }),
+    traceEntry: msg('bfs.init.trace', { start: graph.start }),
   })
 
   while (state.frontier.length > 0) {
@@ -52,8 +53,8 @@ export function runBfs(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 4,
-      explanation: `BFS removes ${node} from the front of the queue.`,
-      traceEntry: `Dequeue ${node}`,
+      explanation: msg('bfs.select', { node }),
+      traceEntry: msg('bfs.select.trace', { node }),
     })
 
     if (node === graph.goal) {
@@ -62,8 +63,8 @@ export function runBfs(graph: Graph): SearchStep[] {
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 6,
-        explanation: `${node} is the goal. BFS returns the path ${path.join(' → ')} with cost ${state.pathCost}.`,
-        traceEntry: `Goal reached: ${node}`,
+        explanation: msg('bfs.goalFound', { node, path: path.join(' → '), cost: state.pathCost }),
+        traceEntry: msg('bfs.goalFound.trace', { node }),
       })
       return steps
     }
@@ -71,8 +72,8 @@ export function runBfs(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 5,
-      explanation: `Checking whether ${node} is the goal (${graph.goal}) — it is not, so BFS continues.`,
-      traceEntry: `Check ${node}: not the goal`,
+      explanation: msg('bfs.checkNotGoal', { node, goal: graph.goal }),
+      traceEntry: msg('bfs.checkNotGoal.trace', { node }),
     })
 
     const neighbors = neighborsOf(graph, node)
@@ -91,9 +92,9 @@ export function runBfs(graph: Graph): SearchStep[] {
       activePseudocodeLine: 7,
       explanation:
         newlyDiscovered.length > 0
-          ? `BFS expands ${node}, examining its neighbors. ${newlyDiscovered.join(', ')} are newly discovered (dashed).`
-          : `BFS expands ${node}, examining its neighbors. All neighbors are already discovered.`,
-      traceEntry: `Expand ${node}`,
+          ? msg('bfs.expand.some', { node, list: newlyDiscovered.join(', ') })
+          : msg('bfs.expand.none', { node }),
+      traceEntry: msg('bfs.expand.trace', { node }),
     })
 
     for (const neighbor of newlyDiscovered) {
@@ -104,11 +105,12 @@ export function runBfs(graph: Graph): SearchStep[] {
     state.expandingEdgeIds = []
 
     if (newlyDiscovered.length > 0) {
+      const list = newlyDiscovered.join(', ')
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 11,
-        explanation: `BFS enqueues ${newlyDiscovered.join(', ')} at the back of the queue.`,
-        traceEntry: `Enqueue ${newlyDiscovered.join(', ')}`,
+        explanation: msg('bfs.commit', { list }),
+        traceEntry: msg('bfs.commit.trace', { list }),
       })
     }
   }
@@ -116,8 +118,8 @@ export function runBfs(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState({ ...state, done: true, found: false }),
     activePseudocodeLine: 12,
-    explanation: `The frontier is empty. ${graph.goal} is unreachable from ${graph.start}.`,
-    traceEntry: 'Frontier empty — no solution',
+    explanation: msg('bfs.noSolution', { goal: graph.goal, start: graph.start }),
+    traceEntry: msg('bfs.noSolution.trace'),
   })
   return steps
 }

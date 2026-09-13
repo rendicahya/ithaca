@@ -19,7 +19,7 @@ describe('BFS vs DFS on a tree', () => {
     expect(last.state.path).toEqual(['S', 'B'])
 
     const dequeueOrder = steps
-      .filter((s) => s.traceEntry?.startsWith('Dequeue'))
+      .filter((s) => s.traceEntry?.key === 'bfs.select.trace')
       .map((s) => s.state.currentNode)
     expect(dequeueOrder).toEqual(['S', 'A', 'B'])
   })
@@ -31,14 +31,14 @@ describe('BFS vs DFS on a tree', () => {
     expect(last.state.path).toEqual(['S', 'B'])
 
     const popOrder = steps
-      .filter((s) => s.traceEntry?.startsWith('Pop'))
+      .filter((s) => s.traceEntry?.key === 'dfs.select.trace')
       .map((s) => s.state.currentNode)
     expect(popOrder).toEqual(['S', 'A', 'C', 'G', 'H', 'D', 'I', 'J', 'B'])
   })
 
   it('DFS visits far more nodes than BFS to reach the same shallow goal', () => {
-    const bfsPops = runBfs(treeGraph).filter((s) => s.traceEntry?.startsWith('Dequeue')).length
-    const dfsPops = runDfs(treeGraph).filter((s) => s.traceEntry?.startsWith('Pop')).length
+    const bfsPops = runBfs(treeGraph).filter((s) => s.traceEntry?.key === 'bfs.select.trace').length
+    const dfsPops = runDfs(treeGraph).filter((s) => s.traceEntry?.key === 'dfs.select.trace').length
     expect(bfsPops).toBe(3)
     expect(dfsPops).toBe(9)
     expect(dfsPops).toBeGreaterThan(bfsPops)

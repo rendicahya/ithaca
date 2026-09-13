@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
   interface Props {
@@ -10,10 +11,12 @@
 </script>
 
 <div class="space-y-1.5">
-  <div class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Top of stack</div>
+  <div class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+    {localeStore.t('stack.top')}
+  </div>
   {#if items.length === 0}
     <p class="rounded-md border border-dashed border-border py-3 text-center text-xs text-muted-foreground">
-      Empty
+      {localeStore.t('stack.empty')}
     </p>
   {:else}
     <div class="flex flex-col gap-1.5">

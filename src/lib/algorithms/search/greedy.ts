@@ -1,5 +1,6 @@
 import { getNode, neighborsOf } from '@/lib/graph/types'
 import type { Graph, NodeId } from '@/lib/graph/types'
+import { msg } from '@/lib/i18n/translate'
 
 import { cloneState, pathCost, reconstructPath } from './types'
 import type { SearchState, SearchStep } from './types'
@@ -48,8 +49,8 @@ export function runGreedy(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState(state),
     activePseudocodeLine: 2,
-    explanation: `Start at ${graph.start}. h(${graph.start}) = ${hScore[graph.start]}.`,
-    traceEntry: `Initialize frontier with ${graph.start}`,
+    explanation: msg('greedy.init', { start: graph.start, h: hScore[graph.start]! }),
+    traceEntry: msg('greedy.init.trace', { start: graph.start }),
   })
 
   while (state.frontier.length > 0) {
@@ -66,8 +67,8 @@ export function runGreedy(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 4,
-      explanation: `Greedy selects ${node} because h(${node}) = ${hScore[node]} is the smallest heuristic value in the frontier.`,
-      traceEntry: `Select ${node} (h=${hScore[node]})`,
+      explanation: msg('greedy.select', { node, h: hScore[node]! }),
+      traceEntry: msg('greedy.select.trace', { node, h: hScore[node]! }),
     })
 
     if (node === graph.goal) {
@@ -76,8 +77,8 @@ export function runGreedy(graph: Graph): SearchStep[] {
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 6,
-        explanation: `${node} is the goal. Greedy returns the path ${path.join(' → ')} with cost ${state.pathCost}.`,
-        traceEntry: `Goal reached: ${node}`,
+        explanation: msg('greedy.goalFound', { node, path: path.join(' → '), cost: state.pathCost }),
+        traceEntry: msg('greedy.goalFound.trace', { node }),
       })
       return steps
     }
@@ -85,8 +86,8 @@ export function runGreedy(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 5,
-      explanation: `Checking whether ${node} is the goal (${graph.goal}) — it is not, so Greedy continues.`,
-      traceEntry: `Check ${node}: not the goal`,
+      explanation: msg('greedy.checkNotGoal', { node, goal: graph.goal }),
+      traceEntry: msg('greedy.checkNotGoal.trace', { node }),
     })
 
     const neighbors = neighborsOf(graph, node)
@@ -105,26 +106,27 @@ export function runGreedy(graph: Graph): SearchStep[] {
       activePseudocodeLine: 7,
       explanation:
         newlyDiscovered.length > 0
-          ? `Greedy expands ${node}, examining its neighbors. ${newlyDiscovered.join(', ')} are newly discovered (dashed).`
-          : `Greedy expands ${node}, examining its neighbors. All neighbors are already discovered.`,
-      traceEntry: `Expand ${node}`,
+          ? msg('greedy.expand.some', { node, list: newlyDiscovered.join(', ') })
+          : msg('greedy.expand.none', { node }),
+      traceEntry: msg('greedy.expand.trace', { node }),
     })
 
-    const inserted: string[] = []
+    const insertedIds: string[] = []
     for (const neighbor of newlyDiscovered) {
       discovered.add(neighbor)
       state.parents[neighbor] = node
       state.frontier = [...state.frontier, neighbor]
-      inserted.push(`${neighbor} (h=${getNode(graph, neighbor).heuristic})`)
+      insertedIds.push(`${neighbor} (h=${getNode(graph, neighbor).heuristic})`)
     }
     state.expandingEdgeIds = []
 
-    if (inserted.length > 0) {
+    if (insertedIds.length > 0) {
+      const list = insertedIds.join(', ')
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 10,
-        explanation: `Greedy inserts ${inserted.join(', ')} into the priority queue. Note that path cost so far is not considered.`,
-        traceEntry: `Insert ${inserted.join(', ')}`,
+        explanation: msg('greedy.commit', { list }),
+        traceEntry: msg('greedy.commit.trace', { list }),
       })
     }
   }
@@ -132,8 +134,8 @@ export function runGreedy(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState({ ...state, done: true, found: false }),
     activePseudocodeLine: 11,
-    explanation: `The frontier is empty. ${graph.goal} is unreachable from ${graph.start}.`,
-    traceEntry: 'Frontier empty — no solution',
+    explanation: msg('greedy.noSolution', { goal: graph.goal, start: graph.start }),
+    traceEntry: msg('greedy.noSolution.trace'),
   })
   return steps
 }

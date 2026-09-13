@@ -1,3 +1,4 @@
+import { msg } from '@/lib/i18n/translate'
 import type { Graph, NodeId } from '@/lib/graph/types'
 import { neighborsOf } from '@/lib/graph/types'
 
@@ -40,8 +41,8 @@ export function runDfs(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState(state),
     activePseudocodeLine: 1,
-    explanation: `Start at ${graph.start}. It is placed on top of the stack.`,
-    traceEntry: `Initialize stack with ${graph.start}`,
+    explanation: msg('dfs.init', { start: graph.start }),
+    traceEntry: msg('dfs.init.trace', { start: graph.start }),
   })
 
   while (state.frontier.length > 0) {
@@ -57,8 +58,8 @@ export function runDfs(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 4,
-      explanation: `DFS pops ${node} from the top of the stack.`,
-      traceEntry: `Pop ${node}`,
+      explanation: msg('dfs.select', { node }),
+      traceEntry: msg('dfs.select.trace', { node }),
     })
 
     if (node === graph.goal) {
@@ -67,8 +68,8 @@ export function runDfs(graph: Graph): SearchStep[] {
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 6,
-        explanation: `${node} is the goal. DFS returns the path ${path.join(' → ')} with cost ${state.pathCost}.`,
-        traceEntry: `Goal reached: ${node}`,
+        explanation: msg('dfs.goalFound', { node, path: path.join(' → '), cost: state.pathCost }),
+        traceEntry: msg('dfs.goalFound.trace', { node }),
       })
       return steps
     }
@@ -76,8 +77,8 @@ export function runDfs(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 5,
-      explanation: `Checking whether ${node} is the goal (${graph.goal}) — it is not, so DFS continues.`,
-      traceEntry: `Check ${node}: not the goal`,
+      explanation: msg('dfs.checkNotGoal', { node, goal: graph.goal }),
+      traceEntry: msg('dfs.checkNotGoal.trace', { node }),
     })
 
     const neighbors = neighborsOf(graph, node)
@@ -102,9 +103,9 @@ export function runDfs(graph: Graph): SearchStep[] {
       activePseudocodeLine: 7,
       explanation:
         newlyDiscovered.length > 0
-          ? `DFS expands ${node}, examining its neighbors. ${newlyDiscovered.join(', ')} are newly discovered (dashed).`
-          : `DFS expands ${node}, examining its neighbors. All neighbors are already discovered.`,
-      traceEntry: `Expand ${node}`,
+          ? msg('dfs.expand.some', { node, list: newlyDiscovered.join(', ') })
+          : msg('dfs.expand.none', { node }),
+      traceEntry: msg('dfs.expand.trace', { node }),
     })
 
     for (const neighbor of newlyDiscovered) {
@@ -115,11 +116,12 @@ export function runDfs(graph: Graph): SearchStep[] {
     state.expandingEdgeIds = []
 
     if (newlyDiscovered.length > 0) {
+      const list = newlyDiscovered.join(', ')
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 11,
-        explanation: `DFS pushes ${newlyDiscovered.join(', ')} onto the stack.`,
-        traceEntry: `Push ${newlyDiscovered.join(', ')}`,
+        explanation: msg('dfs.commit', { list }),
+        traceEntry: msg('dfs.commit.trace', { list }),
       })
     }
   }
@@ -127,8 +129,8 @@ export function runDfs(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState({ ...state, done: true, found: false }),
     activePseudocodeLine: 12,
-    explanation: `The stack is empty. ${graph.goal} is unreachable from ${graph.start}.`,
-    traceEntry: 'Stack empty — no solution',
+    explanation: msg('dfs.noSolution', { goal: graph.goal, start: graph.start }),
+    traceEntry: msg('dfs.noSolution.trace'),
   })
   return steps
 }

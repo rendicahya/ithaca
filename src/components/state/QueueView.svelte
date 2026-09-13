@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
   interface Props {
@@ -10,12 +11,12 @@
 
 <div class="space-y-1.5">
   <div class="flex items-center justify-between text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-    <span>Front</span>
-    <span>Back</span>
+    <span>{localeStore.t('queue.front')}</span>
+    <span>{localeStore.t('queue.back')}</span>
   </div>
   {#if items.length === 0}
     <p class="rounded-md border border-dashed border-border py-3 text-center text-xs text-muted-foreground">
-      Empty
+      {localeStore.t('queue.empty')}
     </p>
   {:else}
     <div class="flex flex-wrap items-center gap-1.5">

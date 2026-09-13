@@ -17,6 +17,8 @@
   import { fullscreenStore } from '@/lib/fullscreen.svelte'
   import { getGraphExample, graphExamples } from '@/lib/graph/examples'
   import type { GraphExample } from '@/lib/graph/examples'
+  import { localeStore } from '@/lib/i18n/locale.svelte'
+  import type { Message } from '@/lib/i18n/translate'
   import { registerGlobalShortcuts } from '@/lib/shortcuts/shortcuts'
 
   let selectedAlgorithmId = $state<SearchAlgorithm['id']>('bfs')
@@ -38,7 +40,7 @@
     controller.steps
       .slice(0, controller.currentIndex + 1)
       .map((s) => s.traceEntry)
-      .filter((entry): entry is string => Boolean(entry)),
+      .filter((entry): entry is Message => Boolean(entry)),
   )
 
   onMount(() => {
@@ -75,7 +77,7 @@
   {#snippet explanation()}
     {#if controller.current}
       <StepExplanation
-        text={controller.current.explanation}
+        message={controller.current.explanation}
         current={controller.progress.current}
         total={controller.progress.total}
       />
@@ -106,7 +108,7 @@
       <PseudocodePanel
         lines={algorithm.pseudocode}
         activeLine={controller.current.activePseudocodeLine}
-        title={algorithm.name}
+        title={localeStore.t(`algorithms.${algorithm.id}.name`)}
         visible={pseudocodeVisible}
         onToggleVisible={() => (pseudocodeVisible = !pseudocodeVisible)}
       />

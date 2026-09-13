@@ -4,6 +4,8 @@
   import { Button } from '@/components/ui/button'
   import { Tooltip } from '@/components/ui/tooltip'
   import type { ExecutionController } from '@/lib/execution/controller.svelte'
+  import { localeStore } from '@/lib/i18n/locale.svelte'
+  import { msg } from '@/lib/i18n/translate'
 
   interface Props {
     controller: ExecutionController
@@ -15,11 +17,11 @@
 
 <div class="flex flex-wrap items-center gap-3 border-t border-border bg-card px-4 py-2.5">
   <div class="flex items-center gap-1.5">
-    <Tooltip text="Step Backward (Page Up / ←)">
+    <Tooltip text={localeStore.t('controls.stepBackwardTooltip')}>
       <Button
         variant="outline"
         size="icon"
-        aria-label="Step backward"
+        aria-label={localeStore.t('controls.stepBackwardAria')}
         disabled={controller.isAtStart}
         onclick={controller.stepBackward}
       >
@@ -27,11 +29,17 @@
       </Button>
     </Tooltip>
 
-    <Tooltip text={controller.isRunning ? 'Pause (Space)' : 'Run (Space)'}>
+    <Tooltip
+      text={controller.isRunning
+        ? localeStore.t('controls.pauseTooltip')
+        : localeStore.t('controls.runTooltip')}
+    >
       <Button
         variant="default"
         size="icon"
-        aria-label={controller.isRunning ? 'Pause' : 'Run'}
+        aria-label={controller.isRunning
+          ? localeStore.t('controls.pauseAria')
+          : localeStore.t('controls.runAria')}
         disabled={controller.isAtEnd && !controller.isRunning}
         onclick={controller.toggleRun}
       >
@@ -43,11 +51,11 @@
       </Button>
     </Tooltip>
 
-    <Tooltip text="Step Forward (Page Down / →)">
+    <Tooltip text={localeStore.t('controls.stepForwardTooltip')}>
       <Button
         variant="outline"
         size="icon"
-        aria-label="Step forward"
+        aria-label={localeStore.t('controls.stepForwardAria')}
         disabled={controller.isAtEnd}
         onclick={controller.stepForward}
       >
@@ -55,20 +63,30 @@
       </Button>
     </Tooltip>
 
-    <Tooltip text="Reset (R)">
-      <Button variant="ghost" size="icon" aria-label="Reset" onclick={controller.reset}>
+    <Tooltip text={localeStore.t('controls.resetTooltip')}>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={localeStore.t('controls.resetAria')}
+        onclick={controller.reset}
+      >
         <RotateCcw class="size-4" />
       </Button>
     </Tooltip>
   </div>
 
   <div class="font-mono text-xs text-muted-foreground">
-    Step {controller.progress.current} / {controller.progress.total}
+    {localeStore.t(
+      msg('controls.stepProgress', {
+        current: controller.progress.current,
+        total: controller.progress.total,
+      }),
+    )}
   </div>
 
   <div class="ml-auto flex items-center gap-3">
     <label class="flex items-center gap-2 text-xs text-muted-foreground">
-      <span>Speed</span>
+      <span>{localeStore.t('controls.speed')}</span>
       <input
         type="range"
         min="250"
@@ -77,12 +95,17 @@
         value={2750 - controller.speedMs}
         oninput={(e) => (controller.speedMs = 2750 - Number(e.currentTarget.value))}
         class="h-1.5 w-28 cursor-pointer accent-primary"
-        aria-label="Playback speed"
+        aria-label={localeStore.t('controls.speed')}
       />
     </label>
 
-    <Tooltip text="Keyboard Shortcuts (?)">
-      <Button variant="ghost" size="icon" aria-label="Show keyboard shortcuts" onclick={onShowHelp}>
+    <Tooltip text={localeStore.t('controls.shortcutsTooltip')}>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={localeStore.t('controls.shortcutsAria')}
+        onclick={onShowHelp}
+      >
         <Keyboard class="size-4" />
       </Button>
     </Tooltip>

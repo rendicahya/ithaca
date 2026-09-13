@@ -20,22 +20,22 @@ describe('DFS', () => {
 
   it('pops nodes in LIFO order', () => {
     const popOrder = steps
-      .filter((s) => s.traceEntry?.startsWith('Pop'))
+      .filter((s) => s.traceEntry?.key === 'dfs.select.trace')
       .map((s) => s.state.currentNode)
     expect(popOrder).toEqual(['S', 'A', 'C', 'F', 'G'])
   })
 
   it('explicitly checks every popped non-goal node against the goal', () => {
     const checked = steps
-      .filter((s) => s.traceEntry?.startsWith('Check'))
+      .filter((s) => s.traceEntry?.key === 'dfs.checkNotGoal.trace')
       .map((s) => s.state.currentNode)
     expect(checked).toEqual(['S', 'A', 'C', 'F'])
   })
 
   it('highlights newly discovered children as dashed expansion edges before committing them', () => {
-    const expandSteps = steps.filter((s) => s.traceEntry?.startsWith('Expand'))
+    const expandSteps = steps.filter((s) => s.traceEntry?.key === 'dfs.expand.trace')
     expect(expandSteps.some((s) => s.state.expandingEdgeIds.length > 0)).toBe(true)
-    const pushSteps = steps.filter((s) => s.traceEntry?.startsWith('Push'))
+    const pushSteps = steps.filter((s) => s.traceEntry?.key === 'dfs.commit.trace')
     expect(pushSteps.every((s) => s.state.expandingEdgeIds.length === 0)).toBe(true)
   })
 })

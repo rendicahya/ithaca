@@ -1,3 +1,4 @@
+import type { Message } from '@/lib/i18n/translate'
 import type { NodeId } from '@/lib/graph/types'
 
 export type NodeStatus = 'unvisited' | 'frontier' | 'current' | 'visited' | 'path'
@@ -30,16 +31,13 @@ export interface SearchState {
 export interface SearchStep {
   state: SearchState
   activePseudocodeLine: number
-  explanation: string
-  traceEntry?: string
+  explanation: Message
+  traceEntry?: Message
 }
 
 export interface SearchAlgorithm {
   id: 'bfs' | 'dfs' | 'ucs' | 'greedy' | 'astar'
-  name: string
-  shortDescription: string
   frontierKind: FrontierKind
-  frontierLabel: string
   pseudocode: string[]
   run: (graph: import('@/lib/graph/types').Graph) => SearchStep[]
 }

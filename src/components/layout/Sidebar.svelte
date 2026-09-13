@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { SearchAlgorithm } from '@/lib/algorithms/search/types'
   import type { GraphExample } from '@/lib/graph/examples'
+  import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
   interface Props {
@@ -15,20 +16,20 @@
   let { algorithms, selectedId, onSelect, graphExamples, selectedGraphId, onSelectGraph }: Props =
     $props()
 
-  const upcomingTopics = [
-    'Genetic Algorithm',
-    'Propositional Logic',
-    'First-Order Logic',
-    'Prolog',
-    'K-Nearest Neighbor',
-    'Naïve Bayes',
+  const upcomingTopicKeys = [
+    'topics.genetic',
+    'topics.propositional',
+    'topics.firstOrder',
+    'topics.prolog',
+    'topics.knn',
+    'topics.naiveBayes',
   ]
 </script>
 
 <nav class="flex h-full flex-col gap-6 overflow-y-auto p-3 scrollbar-thin">
   <div>
     <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      Graph Example
+      {localeStore.t('sidebar.graphExample')}
     </h2>
     <ul class="space-y-0.5">
       {#each graphExamples as example (example.id)}
@@ -44,7 +45,7 @@
             aria-current={selectedGraphId === example.id ? 'page' : undefined}
             onclick={() => onSelectGraph(example.id)}
           >
-            {example.name}
+            {localeStore.t(`graphs.${example.id}.name`)}
           </button>
         </li>
       {/each}
@@ -53,7 +54,7 @@
 
   <div>
     <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      Search Algorithms
+      {localeStore.t('sidebar.searchAlgorithms')}
     </h2>
     <ul class="space-y-0.5">
       {#each algorithms as algorithm (algorithm.id)}
@@ -69,7 +70,7 @@
             aria-current={selectedId === algorithm.id ? 'page' : undefined}
             onclick={() => onSelect(algorithm.id)}
           >
-            {algorithm.name}
+            {localeStore.t(`algorithms.${algorithm.id}.name`)}
           </button>
         </li>
       {/each}
@@ -78,15 +79,15 @@
 
   <div>
     <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      Coming Soon
+      {localeStore.t('sidebar.comingSoon')}
     </h2>
     <ul class="space-y-0.5">
-      {#each upcomingTopics as topic (topic)}
+      {#each upcomingTopicKeys as key (key)}
         <li>
           <span
             class="block cursor-not-allowed rounded-md px-2.5 py-2 text-sm text-muted-foreground/60"
           >
-            {topic}
+            {localeStore.t(key)}
           </span>
         </li>
       {/each}

@@ -1,5 +1,6 @@
 import { neighborsOf } from '@/lib/graph/types'
 import type { Graph, NodeId } from '@/lib/graph/types'
+import { msg } from '@/lib/i18n/translate'
 
 import { cloneState, pathCost, reconstructPath } from './types'
 import type { SearchState, SearchStep } from './types'
@@ -62,8 +63,13 @@ export function runAstar(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState(state),
     activePseudocodeLine: 2,
-    explanation: `Start at ${graph.start}. g(${graph.start}) = 0, h(${graph.start}) = ${hScore[graph.start]}, f(${graph.start}) = ${fScore[graph.start]}.`,
-    traceEntry: `Initialize frontier with ${graph.start} (f=${fScore[graph.start]})`,
+    explanation: msg('astar.init', {
+      start: graph.start,
+      g: 0,
+      h: hScore[graph.start]!,
+      f: fScore[graph.start]!,
+    }),
+    traceEntry: msg('astar.init.trace', { start: graph.start, f: fScore[graph.start]! }),
   })
 
   while (state.frontier.length > 0) {
@@ -81,8 +87,13 @@ export function runAstar(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 4,
-      explanation: `A* selects ${node} because f(${node}) = g(${node}) + h(${node}) = ${gScore[node]} + ${hScore[node]} = ${fScore[node]} is minimal.`,
-      traceEntry: `Select ${node} (f=${fScore[node]})`,
+      explanation: msg('astar.select', {
+        node,
+        g: gScore[node]!,
+        h: hScore[node]!,
+        f: fScore[node]!,
+      }),
+      traceEntry: msg('astar.select.trace', { node, f: fScore[node]! }),
     })
 
     if (node === graph.goal) {
@@ -91,8 +102,8 @@ export function runAstar(graph: Graph): SearchStep[] {
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 6,
-        explanation: `${node} is the goal. A* returns the path ${path.join(' → ')} with cost ${state.pathCost}.`,
-        traceEntry: `Goal reached: ${node}`,
+        explanation: msg('astar.goalFound', { node, path: path.join(' → '), cost: state.pathCost }),
+        traceEntry: msg('astar.goalFound.trace', { node }),
       })
       return steps
     }
@@ -100,8 +111,8 @@ export function runAstar(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 5,
-      explanation: `Checking whether ${node} is the goal (${graph.goal}) — it is not, so A* continues.`,
-      traceEntry: `Check ${node}: not the goal`,
+      explanation: msg('astar.checkNotGoal', { node, goal: graph.goal }),
+      traceEntry: msg('astar.checkNotGoal.trace', { node }),
     })
 
     const inserted: { id: NodeId; edgeId: string; newG: number; newF: number }[] = []
@@ -122,8 +133,8 @@ export function runAstar(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 7,
-      explanation: `A* expands ${node}, examining its neighbors.`,
-      traceEntry: `Expand ${node}`,
+      explanation: msg('astar.expand', { node }),
+      traceEntry: msg('astar.expand.trace', { node }),
     })
 
     for (const { id: neighbor, newG, newF } of inserted) {
@@ -142,34 +153,41 @@ export function runAstar(graph: Graph): SearchStep[] {
     state.expandingEdgeIds = []
 
     if (inserted.length > 0 || updated.length > 0) {
-      const parts: string[] = []
-      if (inserted.length > 0) {
-        parts.push(`inserts ${inserted.map((e) => `${e.id} (f=${e.newF})`).join(', ')}`)
+      const insertedList = inserted.map((e) => `${e.id} (f=${e.newF})`).join(', ')
+      const updatedList = updated.map((e) => `${e.id} (f=${e.oldF}→${e.newF})`).join(', ')
+      if (inserted.length > 0 && updated.length > 0) {
+        steps.push({
+          state: cloneState(state),
+          activePseudocodeLine: 12,
+          explanation: msg('astar.commit.both', { inserted: insertedList, updated: updatedList }),
+          traceEntry: msg('astar.commit.trace.both', {
+            inserted: insertedList,
+            updated: updatedList,
+          }),
+        })
+      } else if (inserted.length > 0) {
+        steps.push({
+          state: cloneState(state),
+          activePseudocodeLine: 12,
+          explanation: msg('astar.commit.insertOnly', { list: insertedList }),
+          traceEntry: msg('astar.commit.trace.insertOnly', { list: insertedList }),
+        })
+      } else {
+        steps.push({
+          state: cloneState(state),
+          activePseudocodeLine: 12,
+          explanation: msg('astar.commit.updateOnly', { list: updatedList }),
+          traceEntry: msg('astar.commit.trace.updateOnly', { list: updatedList }),
+        })
       }
-      if (updated.length > 0) {
-        parts.push(`updates ${updated.map((e) => `${e.id} (f=${e.oldF}→${e.newF})`).join(', ')}`)
-      }
-      steps.push({
-        state: cloneState(state),
-        activePseudocodeLine: 12,
-        explanation: `A* ${parts.join(' and ')} into the priority queue.`,
-        traceEntry: [
-          inserted.length > 0 ? `Insert ${inserted.map((e) => `${e.id} (f=${e.newF})`).join(', ')}` : '',
-          updated.length > 0
-            ? `Update ${updated.map((e) => `${e.id} (f=${e.oldF}→${e.newF})`).join(', ')}`
-            : '',
-        ]
-          .filter(Boolean)
-          .join('; '),
-      })
     }
   }
 
   steps.push({
     state: cloneState({ ...state, done: true, found: false }),
     activePseudocodeLine: 13,
-    explanation: `The frontier is empty. ${graph.goal} is unreachable from ${graph.start}.`,
-    traceEntry: 'Frontier empty — no solution',
+    explanation: msg('astar.noSolution', { goal: graph.goal, start: graph.start }),
+    traceEntry: msg('astar.noSolution.trace'),
   })
   return steps
 }

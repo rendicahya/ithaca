@@ -17,7 +17,7 @@ describe('A*', () => {
 
   it('expands nodes in the expected f(n)-ordered sequence, with ties broken by h(n)', () => {
     const selectOrder = steps
-      .filter((s) => s.traceEntry?.startsWith('Select'))
+      .filter((s) => s.traceEntry?.key === 'astar.select.trace')
       .map((s) => s.state.currentNode)
     expect(selectOrder).toEqual(['S', 'B', 'A', 'E', 'D', 'F', 'G'])
   })

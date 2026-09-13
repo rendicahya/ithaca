@@ -3,6 +3,8 @@
 
   import { Button } from '@/components/ui/button'
   import { Tooltip } from '@/components/ui/tooltip'
+  import { localeStore } from '@/lib/i18n/locale.svelte'
+  import { msg } from '@/lib/i18n/translate'
   import { cn } from '@/lib/utils'
 
   interface Props {
@@ -19,18 +21,24 @@
 <div class="flex h-full flex-col">
   <div class="flex shrink-0 items-center justify-between border-b border-border px-4 py-2">
     <h3 class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      Pseudocode — {title}
+      {localeStore.t(msg('pseudocode.title', { title }))}
     </h3>
-    <Tooltip text={visible ? 'Hide pseudocode' : 'Show pseudocode'}>
+    <Tooltip
+      text={visible
+        ? localeStore.t('pseudocode.hideTooltip')
+        : localeStore.t('pseudocode.showTooltip')}
+    >
       <Button
         variant="ghost"
         size="sm"
         class="h-6 gap-1 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
-        aria-label={visible ? 'Hide pseudocode' : 'Show pseudocode'}
+        aria-label={visible
+          ? localeStore.t('pseudocode.hideTooltip')
+          : localeStore.t('pseudocode.showTooltip')}
         aria-expanded={visible}
         onclick={onToggleVisible}
       >
-        {visible ? 'Hide' : 'Show'}
+        {visible ? localeStore.t('pseudocode.hide') : localeStore.t('pseudocode.show')}
         {#if visible}
           <ChevronDown class="size-3.5" />
         {:else}

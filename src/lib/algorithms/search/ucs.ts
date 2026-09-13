@@ -1,3 +1,4 @@
+import { msg } from '@/lib/i18n/translate'
 import type { Graph, NodeId } from '@/lib/graph/types'
 import { neighborsOf } from '@/lib/graph/types'
 
@@ -49,8 +50,8 @@ export function runUcs(graph: Graph): SearchStep[] {
   steps.push({
     state: cloneState(state),
     activePseudocodeLine: 2,
-    explanation: `Start at ${graph.start} with g(${graph.start}) = 0.`,
-    traceEntry: `Initialize frontier with ${graph.start} (g=0)`,
+    explanation: msg('ucs.init', { start: graph.start, g: 0 }),
+    traceEntry: msg('ucs.init.trace', { start: graph.start, g: 0 }),
   })
 
   while (state.frontier.length > 0) {
@@ -68,8 +69,8 @@ export function runUcs(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 4,
-      explanation: `UCS selects ${node} because g(${node}) = ${gScore[node]} is the smallest path cost in the frontier.`,
-      traceEntry: `Select ${node} (g=${gScore[node]})`,
+      explanation: msg('ucs.select', { node, g: gScore[node]! }),
+      traceEntry: msg('ucs.select.trace', { node, g: gScore[node]! }),
     })
 
     if (node === graph.goal) {
@@ -78,8 +79,8 @@ export function runUcs(graph: Graph): SearchStep[] {
       steps.push({
         state: cloneState(state),
         activePseudocodeLine: 6,
-        explanation: `${node} is the goal. UCS returns the path ${path.join(' → ')} with cost ${state.pathCost}.`,
-        traceEntry: `Goal reached: ${node}`,
+        explanation: msg('ucs.goalFound', { node, path: path.join(' → '), cost: state.pathCost }),
+        traceEntry: msg('ucs.goalFound.trace', { node }),
       })
       return steps
     }
@@ -87,8 +88,8 @@ export function runUcs(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 5,
-      explanation: `Checking whether ${node} is the goal (${graph.goal}) — it is not, so UCS continues.`,
-      traceEntry: `Check ${node}: not the goal`,
+      explanation: msg('ucs.checkNotGoal', { node, goal: graph.goal }),
+      traceEntry: msg('ucs.checkNotGoal.trace', { node }),
     })
 
     // Preview which neighbors this expansion will insert or improve, without
@@ -110,8 +111,8 @@ export function runUcs(graph: Graph): SearchStep[] {
     steps.push({
       state: cloneState(state),
       activePseudocodeLine: 7,
-      explanation: `UCS expands ${node}, examining its neighbors.`,
-      traceEntry: `Expand ${node}`,
+      explanation: msg('ucs.expand', { node }),
+      traceEntry: msg('ucs.expand.trace', { node }),
     })
 
     for (const { id: neighbor, newG } of inserted) {
@@ -127,34 +128,38 @@ export function runUcs(graph: Graph): SearchStep[] {
     state.expandingEdgeIds = []
 
     if (inserted.length > 0 || updated.length > 0) {
-      const parts: string[] = []
-      if (inserted.length > 0) {
-        parts.push(`inserts ${inserted.map((e) => `${e.id} (g=${e.newG})`).join(', ')}`)
+      const insertedList = inserted.map((e) => `${e.id} (g=${e.newG})`).join(', ')
+      const updatedList = updated.map((e) => `${e.id} (g=${e.oldG}→${e.newG})`).join(', ')
+      if (inserted.length > 0 && updated.length > 0) {
+        steps.push({
+          state: cloneState(state),
+          activePseudocodeLine: 12,
+          explanation: msg('ucs.commit.both', { inserted: insertedList, updated: updatedList }),
+          traceEntry: msg('ucs.commit.trace.both', { inserted: insertedList, updated: updatedList }),
+        })
+      } else if (inserted.length > 0) {
+        steps.push({
+          state: cloneState(state),
+          activePseudocodeLine: 12,
+          explanation: msg('ucs.commit.insertOnly', { list: insertedList }),
+          traceEntry: msg('ucs.commit.trace.insertOnly', { list: insertedList }),
+        })
+      } else {
+        steps.push({
+          state: cloneState(state),
+          activePseudocodeLine: 12,
+          explanation: msg('ucs.commit.updateOnly', { list: updatedList }),
+          traceEntry: msg('ucs.commit.trace.updateOnly', { list: updatedList }),
+        })
       }
-      if (updated.length > 0) {
-        parts.push(`updates ${updated.map((e) => `${e.id} (g=${e.oldG}→${e.newG})`).join(', ')}`)
-      }
-      steps.push({
-        state: cloneState(state),
-        activePseudocodeLine: 12,
-        explanation: `UCS ${parts.join(' and ')} into the priority queue.`,
-        traceEntry: [
-          inserted.length > 0 ? `Insert ${inserted.map((e) => `${e.id} (g=${e.newG})`).join(', ')}` : '',
-          updated.length > 0
-            ? `Update ${updated.map((e) => `${e.id} (g=${e.oldG}→${e.newG})`).join(', ')}`
-            : '',
-        ]
-          .filter(Boolean)
-          .join('; '),
-      })
     }
   }
 
   steps.push({
     state: cloneState({ ...state, done: true, found: false }),
     activePseudocodeLine: 13,
-    explanation: `The frontier is empty. ${graph.goal} is unreachable from ${graph.start}.`,
-    traceEntry: 'Frontier empty — no solution',
+    explanation: msg('ucs.noSolution', { goal: graph.goal, start: graph.start }),
+    traceEntry: msg('ucs.noSolution.trace'),
   })
   return steps
 }
