@@ -5,6 +5,10 @@
   import Header from '@/components/layout/Header.svelte'
   import Sidebar from '@/components/layout/Sidebar.svelte'
   import type { Topic } from '@/components/layout/Sidebar.svelte'
+  import GeneticStatePanel from '@/components/genetic/GeneticStatePanel.svelte'
+  import PopulationView from '@/components/genetic/PopulationView.svelte'
+  import NaiveBayesStatePanel from '@/components/naiveBayes/NaiveBayesStatePanel.svelte'
+  import NaiveBayesView from '@/components/naiveBayes/NaiveBayesView.svelte'
   import PrologStatePanel from '@/components/prolog/PrologStatePanel.svelte'
   import ProofTreeView from '@/components/prolog/ProofTreeView.svelte'
   import PseudocodePanel from '@/components/pseudocode/PseudocodePanel.svelte'
@@ -16,6 +20,10 @@
   import GraphView from '@/components/visualization/GraphView.svelte'
   import { getAlgorithm, searchAlgorithms } from '@/lib/algorithms/search'
   import type { SearchAlgorithm, SearchStep } from '@/lib/algorithms/search/types'
+  import { geneticPseudocode, runGeneticAlgorithm } from '@/lib/algorithms/genetic'
+  import type { GAStep } from '@/lib/algorithms/genetic'
+  import { naiveBayesPseudocode, playTennisDataset, runNaiveBayes } from '@/lib/algorithms/naiveBayes'
+  import type { NBStep } from '@/lib/algorithms/naiveBayes'
   import { ExecutionController } from '@/lib/execution/controller.svelte'
   import { fullscreenStore } from '@/lib/fullscreen.svelte'
   import { getGraphExample, graphExamples } from '@/lib/graph/examples'
@@ -48,7 +56,29 @@
     prologController.load(solveProlog(defaultDatabase, defaultQuery))
   })
 
-  const controller = $derived(selectedTopic === 'search' ? searchController : prologController)
+  // --- Genetic Algorithm ---
+  const geneticController = new ExecutionController<GAStep>()
+
+  $effect(() => {
+    geneticController.load(runGeneticAlgorithm())
+  })
+
+  // --- Naïve Bayes ---
+  const naiveBayesController = new ExecutionController<NBStep>()
+
+  $effect(() => {
+    naiveBayesController.load(runNaiveBayes())
+  })
+
+  const controller = $derived(
+    selectedTopic === 'search'
+      ? searchController
+      : selectedTopic === 'prolog'
+        ? prologController
+        : selectedTopic === 'genetic'
+          ? geneticController
+          : naiveBayesController,
+  )
 
   let helpOpen = $state(false)
   let pseudocodeVisible = $state(true)
@@ -61,12 +91,22 @@
   )
 
   const pseudocodeLines = $derived(
-    selectedTopic === 'search' ? algorithm.pseudocode : prologPseudocode,
+    selectedTopic === 'search'
+      ? algorithm.pseudocode
+      : selectedTopic === 'prolog'
+        ? prologPseudocode
+        : selectedTopic === 'genetic'
+          ? geneticPseudocode
+          : naiveBayesPseudocode,
   )
   const pseudocodeTitle = $derived(
     selectedTopic === 'search'
       ? localeStore.t(`algorithms.${algorithm.id}.name`)
-      : localeStore.t('topics.prolog'),
+      : selectedTopic === 'prolog'
+        ? localeStore.t('topics.prolog')
+        : selectedTopic === 'genetic'
+          ? localeStore.t('topics.genetic')
+          : localeStore.t('topics.naiveBayes'),
   )
 
   onMount(() => {
@@ -121,8 +161,16 @@
           frontierKind={algorithm.frontierKind}
         />
       {/if}
-    {:else if prologController.current}
-      <ProofTreeView state={prologController.current.state} />
+    {:else if selectedTopic === 'prolog'}
+      {#if prologController.current}
+        <ProofTreeView state={prologController.current.state} />
+      {/if}
+    {:else if selectedTopic === 'genetic'}
+      {#if geneticController.current}
+        <PopulationView state={geneticController.current.state} />
+      {/if}
+    {:else if naiveBayesController.current}
+      <NaiveBayesView state={naiveBayesController.current.state} />
     {/if}
   {/snippet}
 
@@ -133,11 +181,22 @@
           {#if searchController.current}
             <StatePanel state={searchController.current.state} {algorithm} />
           {/if}
-        {:else if prologController.current}
-          <PrologStatePanel
-            state={prologController.current.state}
-            database={defaultDatabase}
-            query={defaultQuery}
+        {:else if selectedTopic === 'prolog'}
+          {#if prologController.current}
+            <PrologStatePanel
+              state={prologController.current.state}
+              database={defaultDatabase}
+              query={defaultQuery}
+            />
+          {/if}
+        {:else if selectedTopic === 'genetic'}
+          {#if geneticController.current}
+            <GeneticStatePanel state={geneticController.current.state} />
+          {/if}
+        {:else if naiveBayesController.current}
+          <NaiveBayesStatePanel
+            state={naiveBayesController.current.state}
+            dataset={playTennisDataset}
           />
         {/if}
       </div>

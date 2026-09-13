@@ -4,7 +4,7 @@
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
-  export type Topic = 'search' | 'prolog'
+  export type Topic = 'search' | 'prolog' | 'genetic' | 'naiveBayes'
 
   interface Props {
     selectedTopic: Topic
@@ -28,13 +28,14 @@
     onSelectGraph,
   }: Props = $props()
 
-  const upcomingTopicKeys = [
-    'topics.genetic',
-    'topics.propositional',
-    'topics.firstOrder',
-    'topics.knn',
-    'topics.naiveBayes',
+  const topicButtons: { id: Topic; labelKey: string }[] = [
+    { id: 'search', labelKey: 'sidebar.searchAlgorithms' },
+    { id: 'prolog', labelKey: 'topics.prolog' },
+    { id: 'genetic', labelKey: 'topics.genetic' },
+    { id: 'naiveBayes', labelKey: 'topics.naiveBayes' },
   ]
+
+  const upcomingTopicKeys = ['topics.propositional', 'topics.firstOrder', 'topics.knn']
 </script>
 
 <nav class="flex h-full flex-col gap-6 overflow-y-auto p-3 scrollbar-thin">
@@ -43,36 +44,23 @@
       {localeStore.t('sidebar.topics')}
     </h2>
     <ul class="space-y-0.5">
-      <li>
-        <button
-          type="button"
-          class={cn(
-            'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
-            selectedTopic === 'search'
-              ? 'bg-primary text-primary-foreground font-medium'
-              : 'text-foreground hover:bg-accent hover:text-accent-foreground',
-          )}
-          aria-current={selectedTopic === 'search' ? 'page' : undefined}
-          onclick={() => onSelectTopic('search')}
-        >
-          {localeStore.t('sidebar.searchAlgorithms')}
-        </button>
-      </li>
-      <li>
-        <button
-          type="button"
-          class={cn(
-            'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
-            selectedTopic === 'prolog'
-              ? 'bg-primary text-primary-foreground font-medium'
-              : 'text-foreground hover:bg-accent hover:text-accent-foreground',
-          )}
-          aria-current={selectedTopic === 'prolog' ? 'page' : undefined}
-          onclick={() => onSelectTopic('prolog')}
-        >
-          {localeStore.t('topics.prolog')}
-        </button>
-      </li>
+      {#each topicButtons as topic (topic.id)}
+        <li>
+          <button
+            type="button"
+            class={cn(
+              'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
+              selectedTopic === topic.id
+                ? 'bg-primary text-primary-foreground font-medium'
+                : 'text-foreground hover:bg-accent hover:text-accent-foreground',
+            )}
+            aria-current={selectedTopic === topic.id ? 'page' : undefined}
+            onclick={() => onSelectTopic(topic.id)}
+          >
+            {localeStore.t(topic.labelKey)}
+          </button>
+        </li>
+      {/each}
     </ul>
   </div>
 
