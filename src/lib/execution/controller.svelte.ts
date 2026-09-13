@@ -1,4 +1,19 @@
-import type { SearchStep } from '@/lib/algorithms/search/types'
+/**
+ * The subset of ExecutionController that playback UI (step/run/pause/reset
+ * controls) needs — independent of the step payload type, so one control
+ * bar component works for every topic without being generic itself.
+ */
+export interface PlaybackController {
+  isAtStart: boolean
+  isAtEnd: boolean
+  isRunning: boolean
+  speedMs: number
+  progress: { current: number; total: number }
+  stepForward: () => void
+  stepBackward: () => void
+  toggleRun: () => void
+  reset: () => void
+}
 
 /**
  * Drives step-by-step playback over a precomputed, deterministic array of
@@ -7,21 +22,23 @@ import type { SearchStep } from '@/lib/algorithms/search/types'
  * back is just moving an index, never "undoing" a mutation.
  *
  * The same instance backs mouse controls, keyboard shortcuts, and the
- * presenter pointer — none of them contain their own execution logic.
+ * presenter pointer — none of them contain their own execution logic. It is
+ * generic over the step type so every topic (search algorithms, Prolog, ...)
+ * shares one execution engine instead of reimplementing stepping/run/pause.
  */
-export class ExecutionController {
-  steps = $state<SearchStep[]>([])
+export class ExecutionController<TStep> implements PlaybackController {
+  steps = $state<TStep[]>([])
   currentIndex = $state(0)
   isRunning = $state(false)
   speedMs = $state(1000)
 
   private timer: ReturnType<typeof setTimeout> | undefined
 
-  constructor(steps: SearchStep[] = []) {
+  constructor(steps: TStep[] = []) {
     this.load(steps)
   }
 
-  get current(): SearchStep | undefined {
+  get current(): TStep | undefined {
     return this.steps[this.currentIndex]
   }
 
@@ -37,7 +54,7 @@ export class ExecutionController {
     return { current: this.currentIndex + 1, total: this.steps.length }
   }
 
-  load(steps: SearchStep[]): void {
+  load(steps: TStep[]): void {
     this.pause()
     this.steps = steps
     this.currentIndex = 0

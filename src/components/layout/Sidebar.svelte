@@ -4,7 +4,11 @@
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
+  export type Topic = 'search' | 'prolog'
+
   interface Props {
+    selectedTopic: Topic
+    onSelectTopic: (topic: Topic) => void
     algorithms: SearchAlgorithm[]
     selectedId: SearchAlgorithm['id']
     onSelect: (id: SearchAlgorithm['id']) => void
@@ -13,14 +17,21 @@
     onSelectGraph: (id: GraphExample['id']) => void
   }
 
-  let { algorithms, selectedId, onSelect, graphExamples, selectedGraphId, onSelectGraph }: Props =
-    $props()
+  let {
+    selectedTopic,
+    onSelectTopic,
+    algorithms,
+    selectedId,
+    onSelect,
+    graphExamples,
+    selectedGraphId,
+    onSelectGraph,
+  }: Props = $props()
 
   const upcomingTopicKeys = [
     'topics.genetic',
     'topics.propositional',
     'topics.firstOrder',
-    'topics.prolog',
     'topics.knn',
     'topics.naiveBayes',
   ]
@@ -29,53 +40,93 @@
 <nav class="flex h-full flex-col gap-6 overflow-y-auto p-3 scrollbar-thin">
   <div>
     <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      {localeStore.t('sidebar.graphExample')}
+      {localeStore.t('sidebar.topics')}
     </h2>
     <ul class="space-y-0.5">
-      {#each graphExamples as example (example.id)}
-        <li>
-          <button
-            type="button"
-            class={cn(
-              'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
-              selectedGraphId === example.id
-                ? 'bg-secondary font-medium text-secondary-foreground'
-                : 'text-foreground hover:bg-accent hover:text-accent-foreground',
-            )}
-            aria-current={selectedGraphId === example.id ? 'page' : undefined}
-            onclick={() => onSelectGraph(example.id)}
-          >
-            {localeStore.t(`graphs.${example.id}.name`)}
-          </button>
-        </li>
-      {/each}
+      <li>
+        <button
+          type="button"
+          class={cn(
+            'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
+            selectedTopic === 'search'
+              ? 'bg-primary text-primary-foreground font-medium'
+              : 'text-foreground hover:bg-accent hover:text-accent-foreground',
+          )}
+          aria-current={selectedTopic === 'search' ? 'page' : undefined}
+          onclick={() => onSelectTopic('search')}
+        >
+          {localeStore.t('sidebar.searchAlgorithms')}
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          class={cn(
+            'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
+            selectedTopic === 'prolog'
+              ? 'bg-primary text-primary-foreground font-medium'
+              : 'text-foreground hover:bg-accent hover:text-accent-foreground',
+          )}
+          aria-current={selectedTopic === 'prolog' ? 'page' : undefined}
+          onclick={() => onSelectTopic('prolog')}
+        >
+          {localeStore.t('topics.prolog')}
+        </button>
+      </li>
     </ul>
   </div>
 
-  <div>
-    <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      {localeStore.t('sidebar.searchAlgorithms')}
-    </h2>
-    <ul class="space-y-0.5">
-      {#each algorithms as algorithm (algorithm.id)}
-        <li>
-          <button
-            type="button"
-            class={cn(
-              'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
-              selectedId === algorithm.id
-                ? 'bg-primary text-primary-foreground font-medium'
-                : 'text-foreground hover:bg-accent hover:text-accent-foreground',
-            )}
-            aria-current={selectedId === algorithm.id ? 'page' : undefined}
-            onclick={() => onSelect(algorithm.id)}
-          >
-            {localeStore.t(`algorithms.${algorithm.id}.name`)}
-          </button>
-        </li>
-      {/each}
-    </ul>
-  </div>
+  {#if selectedTopic === 'search'}
+    <div>
+      <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {localeStore.t('sidebar.graphExample')}
+      </h2>
+      <ul class="space-y-0.5">
+        {#each graphExamples as example (example.id)}
+          <li>
+            <button
+              type="button"
+              class={cn(
+                'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
+                selectedGraphId === example.id
+                  ? 'bg-secondary font-medium text-secondary-foreground'
+                  : 'text-foreground hover:bg-accent hover:text-accent-foreground',
+              )}
+              aria-current={selectedGraphId === example.id ? 'page' : undefined}
+              onclick={() => onSelectGraph(example.id)}
+            >
+              {localeStore.t(`graphs.${example.id}.name`)}
+            </button>
+          </li>
+        {/each}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {localeStore.t('sidebar.algorithms')}
+      </h2>
+      <ul class="space-y-0.5">
+        {#each algorithms as algorithm (algorithm.id)}
+          <li>
+            <button
+              type="button"
+              class={cn(
+                'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
+                selectedId === algorithm.id
+                  ? 'bg-secondary font-medium text-secondary-foreground'
+                  : 'text-foreground hover:bg-accent hover:text-accent-foreground',
+              )}
+              aria-current={selectedId === algorithm.id ? 'page' : undefined}
+              onclick={() => onSelect(algorithm.id)}
+            >
+              {localeStore.t(`algorithms.${algorithm.id}.name`)}
+            </button>
+          </li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
 
   <div>
     <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">

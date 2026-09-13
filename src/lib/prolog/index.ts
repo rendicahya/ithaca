@@ -1,0 +1,5 @@
+export { defaultDatabase, defaultQuery } from './database'
+export { prologPseudocode, solveProlog } from './solve'
+export { clauseToString, termToString } from './terms'
+export type { Bindings, Clause, Term } from './terms'
+export type { ProofState, ProofStep, ProofTreeEdge, ProofTreeNode } from './types'

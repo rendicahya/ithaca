@@ -3,12 +3,12 @@
 
   import { Button } from '@/components/ui/button'
   import { Tooltip } from '@/components/ui/tooltip'
-  import type { ExecutionController } from '@/lib/execution/controller.svelte'
+  import type { PlaybackController } from '@/lib/execution/controller.svelte'
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import { msg } from '@/lib/i18n/translate'
 
   interface Props {
-    controller: ExecutionController
+    controller: PlaybackController
     onShowHelp: () => void
   }
 
