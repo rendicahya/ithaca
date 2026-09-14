@@ -67,3 +67,16 @@ export function findEdge(graph: Graph, a: NodeId, b: NodeId): GraphEdge {
   if (!edge) throw new Error(`No edge between ${a} and ${b}`)
   return edge
 }
+
+export function emptyGraph(): Graph {
+  return { nodes: [], edges: [], start: '', goal: '' }
+}
+
+/** A graph is runnable once it has at least one node and a valid start/goal. */
+export function isValidGraph(graph: Graph): boolean {
+  return (
+    graph.nodes.length > 0 &&
+    graph.nodes.some((n) => n.id === graph.start) &&
+    graph.nodes.some((n) => n.id === graph.goal)
+  )
+}

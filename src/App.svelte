@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { Pencil } from '@lucide/svelte'
 
   import AppShell from '@/components/layout/AppShell.svelte'
+  import { Button } from '@/components/ui/button'
   import Header from '@/components/layout/Header.svelte'
   import Sidebar from '@/components/layout/Sidebar.svelte'
   import type { Topic } from '@/components/layout/Sidebar.svelte'
@@ -17,6 +19,8 @@
   import StepExplanation from '@/components/trace/StepExplanation.svelte'
   import ExecutionControls from '@/components/execution/ExecutionControls.svelte'
   import KeyboardShortcutHelp from '@/components/execution/KeyboardShortcutHelp.svelte'
+  import GraphEditorPanel from '@/components/visualization/GraphEditorPanel.svelte'
+  import GraphEditorView from '@/components/visualization/GraphEditorView.svelte'
   import GraphView from '@/components/visualization/GraphView.svelte'
   import { getAlgorithm, searchAlgorithms } from '@/lib/algorithms/search'
   import type { SearchAlgorithm, SearchStep } from '@/lib/algorithms/search/types'
@@ -26,8 +30,10 @@
   import type { NBStep } from '@/lib/algorithms/naiveBayes'
   import { ExecutionController } from '@/lib/execution/controller.svelte'
   import { fullscreenStore } from '@/lib/fullscreen.svelte'
+  import { customGraphStore } from '@/lib/graph/customGraph.svelte'
   import { getGraphExample, graphExamples } from '@/lib/graph/examples'
   import type { GraphExample } from '@/lib/graph/examples'
+  import { isValidGraph } from '@/lib/graph/types'
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import type { Message } from '@/lib/i18n/translate'
   import { defaultDatabase, defaultQuery, prologPseudocode, solveProlog } from '@/lib/prolog'
@@ -41,12 +47,21 @@
   const algorithm = $derived(getAlgorithm(selectedAlgorithmId))
 
   let selectedGraphId = $state<GraphExample['id']>('weighted')
-  const graph = $derived(getGraphExample(selectedGraphId).graph)
+  const graph = $derived(
+    selectedGraphId === 'custom' ? customGraphStore.graph : getGraphExample(selectedGraphId).graph,
+  )
+
+  let editingCustomGraph = $state(false)
+  const showGraphEditor = $derived(
+    selectedTopic === 'search' &&
+      selectedGraphId === 'custom' &&
+      (editingCustomGraph || customGraphStore.graph.nodes.length === 0),
+  )
 
   const searchController = new ExecutionController<SearchStep>()
 
   $effect(() => {
-    searchController.load(algorithm.run(graph))
+    searchController.load(isValidGraph(graph) ? algorithm.run(graph) : [])
   })
 
   // --- Prolog ---
@@ -84,10 +99,12 @@
   let pseudocodeVisible = $state(true)
 
   const traceEntries = $derived(
-    controller.steps
-      .slice(0, controller.currentIndex + 1)
-      .map((s) => s.traceEntry)
-      .filter((entry): entry is Message => Boolean(entry)),
+    showGraphEditor
+      ? []
+      : controller.steps
+          .slice(0, controller.currentIndex + 1)
+          .map((s) => s.traceEntry)
+          .filter((entry): entry is Message => Boolean(entry)),
   )
 
   const pseudocodeLines = $derived(
@@ -143,7 +160,7 @@
   {/snippet}
 
   {#snippet explanation()}
-    {#if controller.current}
+    {#if controller.current && !showGraphEditor}
       <StepExplanation
         message={controller.current.explanation}
         current={controller.progress.current}
@@ -154,12 +171,31 @@
 
   {#snippet main()}
     {#if selectedTopic === 'search'}
-      {#if searchController.current}
-        <GraphView
-          {graph}
-          state={searchController.current.state}
-          frontierKind={algorithm.frontierKind}
-        />
+      {#if showGraphEditor}
+        <GraphEditorView store={customGraphStore} />
+      {:else}
+        <div class="relative h-full">
+          {#if selectedGraphId === 'custom'}
+            <div class="absolute right-2 top-2 z-10">
+              <Button
+                variant="outline"
+                size="sm"
+                class="bg-card"
+                onclick={() => (editingCustomGraph = true)}
+              >
+                <Pencil class="size-3.5" />
+                {localeStore.t('customGraph.editGraph')}
+              </Button>
+            </div>
+          {/if}
+          {#if searchController.current}
+            <GraphView
+              {graph}
+              state={searchController.current.state}
+              frontierKind={algorithm.frontierKind}
+            />
+          {/if}
+        </div>
       {/if}
     {:else if selectedTopic === 'prolog'}
       {#if prologController.current}
@@ -178,7 +214,9 @@
     <div class="flex h-full flex-col">
       <div class="flex-1 overflow-hidden">
         {#if selectedTopic === 'search'}
-          {#if searchController.current}
+          {#if showGraphEditor}
+            <GraphEditorPanel store={customGraphStore} onRun={() => (editingCustomGraph = false)} />
+          {:else if searchController.current}
             <StatePanel state={searchController.current.state} {algorithm} />
           {/if}
         {:else if selectedTopic === 'prolog'}

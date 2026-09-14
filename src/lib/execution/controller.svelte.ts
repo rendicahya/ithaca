@@ -51,7 +51,7 @@ export class ExecutionController<TStep> implements PlaybackController {
   }
 
   get progress(): { current: number; total: number } {
-    return { current: this.currentIndex + 1, total: this.steps.length }
+    return { current: this.steps.length === 0 ? 0 : this.currentIndex + 1, total: this.steps.length }
   }
 
   load(steps: TStep[]): void {
