@@ -8,6 +8,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'sidebar.topics': 'Topics',
     'sidebar.graphExample': 'Graph Example',
     'sidebar.searchAlgorithms': 'Search Algorithms',
+    'sidebar.goalNode': 'Goal Node',
     'sidebar.algorithms': 'Algorithms',
     'sidebar.comingSoon': 'Coming Soon',
 
@@ -315,6 +316,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
 
     'sidebar.topics': 'Topik',
     'sidebar.graphExample': 'Contoh Graf',
+    'sidebar.goalNode': 'Node Tujuan',
     'sidebar.searchAlgorithms': 'Algoritma Pencarian',
     'sidebar.algorithms': 'Algoritma',
     'sidebar.comingSoon': 'Segera Hadir',

@@ -33,7 +33,9 @@
   import { customGraphStore } from '@/lib/graph/customGraph.svelte'
   import { getGraphExample, graphExamples } from '@/lib/graph/examples'
   import type { GraphExample } from '@/lib/graph/examples'
+  import { computeHeuristics } from '@/lib/graph/heuristics'
   import { isValidGraph } from '@/lib/graph/types'
+  import type { NodeId } from '@/lib/graph/types'
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import type { Message } from '@/lib/i18n/translate'
   import { defaultDatabase, defaultQuery, prologPseudocode, solveProlog } from '@/lib/prolog'
@@ -47,9 +49,30 @@
   const algorithm = $derived(getAlgorithm(selectedAlgorithmId))
 
   let selectedGraphId = $state<GraphExample['id']>('weighted')
-  const graph = $derived(
-    selectedGraphId === 'custom' ? customGraphStore.graph : getGraphExample(selectedGraphId).graph,
-  )
+
+  // Per-example goal override, chosen by the lecturer from the sidebar.
+  // Heuristics are recomputed for the new goal (rather than reused as-is)
+  // because the hand-tuned h(n) values in defaultGraph/treeGraph are only
+  // valid for their original goal — some are deliberately loose to make
+  // Greedy's flaw visible there, and would silently be wrong elsewhere.
+  let goalOverrides = $state<Record<string, NodeId>>({})
+
+  const graph = $derived.by(() => {
+    if (selectedGraphId === 'custom') return customGraphStore.graph
+    const base = getGraphExample(selectedGraphId).graph
+    const goalId = goalOverrides[selectedGraphId]
+    if (!goalId || goalId === base.goal) return base
+    const heuristics = computeHeuristics(base, goalId)
+    return {
+      ...base,
+      goal: goalId,
+      nodes: base.nodes.map((n) => ({ ...n, heuristic: heuristics[n.id] })),
+    }
+  })
+
+  function selectGoal(id: NodeId): void {
+    goalOverrides = { ...goalOverrides, [selectedGraphId]: id }
+  }
 
   let editingCustomGraph = $state(false)
   const showGraphEditor = $derived(
@@ -156,6 +179,8 @@
       {graphExamples}
       selectedGraphId={selectedGraphId}
       onSelectGraph={(id) => (selectedGraphId = id)}
+      {graph}
+      onSelectGoal={selectGoal}
     />
   {/snippet}
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { SearchAlgorithm } from '@/lib/algorithms/search/types'
   import type { GraphExample } from '@/lib/graph/examples'
+  import type { Graph, NodeId } from '@/lib/graph/types'
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
@@ -15,6 +16,8 @@
     graphExamples: GraphExample[]
     selectedGraphId: GraphExample['id']
     onSelectGraph: (id: GraphExample['id']) => void
+    graph: Graph
+    onSelectGoal: (id: NodeId) => void
   }
 
   let {
@@ -26,6 +29,8 @@
     graphExamples,
     selectedGraphId,
     onSelectGraph,
+    graph,
+    onSelectGoal,
   }: Props = $props()
 
   const topicButtons: { id: Topic; labelKey: string }[] = [
@@ -89,6 +94,23 @@
         {/each}
       </ul>
     </div>
+
+    {#if selectedGraphId !== 'custom'}
+      <div>
+        <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {localeStore.t('sidebar.goalNode')}
+        </h2>
+        <select
+          value={graph.goal}
+          onchange={(e) => onSelectGoal(e.currentTarget.value)}
+          class="w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-sm text-foreground"
+        >
+          {#each graph.nodes as node (node.id)}
+            <option value={node.id}>{node.label}</option>
+          {/each}
+        </select>
+      </div>
+    {/if}
 
     <div>
       <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
