@@ -15,6 +15,12 @@
 
   const SIZE = 480
   const MARGIN = 32
+  // Base on-screen size at 100% zoom; scaled directly by zoom.level below.
+  // (Deliberately not using the CSS `zoom` property here: combined with the
+  // percentage + max-size Tailwind classes this SVG used, `zoom` shrank the
+  // rendered size as the level increased instead of growing it.)
+  const BASE_DISPLAY_SIZE = 420
+  const displaySize = $derived(BASE_DISPLAY_SIZE * zoom.level)
 
   function toScreen(x: number, y: number): { cx: number; cy: number } {
     const { min, max } = state.bounds
@@ -46,11 +52,13 @@
     onZoomOut={zoom.zoomOut}
     onReset={zoom.reset}
   />
-  <div
-    class="flex h-full w-full items-center justify-center overflow-auto p-4"
-    style={`zoom: ${zoom.level}`}
-  >
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} class="h-full max-h-[520px] w-full max-w-[520px]">
+  <div class="flex h-full w-full items-center justify-center overflow-auto p-4">
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      width={displaySize}
+      height={displaySize}
+      class="shrink-0"
+    >
       <!-- grid -->
       {#each gridLines as v (v)}
         {@const h = toScreen(v, state.bounds.min)}
