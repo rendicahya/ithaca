@@ -46,11 +46,12 @@
   import type { NodeId } from '@/lib/graph/types'
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import type { Message } from '@/lib/i18n/translate'
+  import { lastTopicStore } from '@/lib/navigation.svelte'
   import { defaultDatabase, defaultQuery, prologPseudocode, solveProlog } from '@/lib/prolog'
   import type { ProofStep } from '@/lib/prolog'
   import { registerGlobalShortcuts } from '@/lib/shortcuts/shortcuts'
 
-  let selectedTopic = $state<Topic>('search')
+  let selectedTopic = $state<Topic>(lastTopicStore.topic)
 
   // --- Search Algorithms ---
   let selectedAlgorithmId = $state<SearchAlgorithm['id']>('bfs')
@@ -206,7 +207,10 @@
   {#snippet nav()}
     <Sidebar
       {selectedTopic}
-      onSelectTopic={(topic) => (selectedTopic = topic)}
+      onSelectTopic={(topic) => {
+        selectedTopic = topic
+        lastTopicStore.set(topic)
+      }}
       algorithms={searchAlgorithms}
       selectedId={selectedAlgorithmId}
       onSelect={(id) => (selectedAlgorithmId = id)}
