@@ -9,6 +9,10 @@
   import type { Topic } from '@/components/layout/Sidebar.svelte'
   import GeneticStatePanel from '@/components/genetic/GeneticStatePanel.svelte'
   import PopulationView from '@/components/genetic/PopulationView.svelte'
+  import ACOGraphView from '@/components/aco/ACOGraphView.svelte'
+  import ACOStatePanel from '@/components/aco/ACOStatePanel.svelte'
+  import ParticleSwarmView from '@/components/pso/ParticleSwarmView.svelte'
+  import PSOStatePanel from '@/components/pso/PSOStatePanel.svelte'
   import NaiveBayesStatePanel from '@/components/naiveBayes/NaiveBayesStatePanel.svelte'
   import NaiveBayesView from '@/components/naiveBayes/NaiveBayesView.svelte'
   import PrologStatePanel from '@/components/prolog/PrologStatePanel.svelte'
@@ -26,6 +30,10 @@
   import type { SearchAlgorithm, SearchStep } from '@/lib/algorithms/search/types'
   import { geneticPseudocode, runGeneticAlgorithm } from '@/lib/algorithms/genetic'
   import type { GAStep } from '@/lib/algorithms/genetic'
+  import { acoPseudocode, runACO } from '@/lib/algorithms/aco'
+  import type { ACOStep } from '@/lib/algorithms/aco'
+  import { psoPseudocode, runPSO } from '@/lib/algorithms/pso'
+  import type { PSOStep } from '@/lib/algorithms/pso'
   import { naiveBayesPseudocode, playTennisDataset, runNaiveBayes } from '@/lib/algorithms/naiveBayes'
   import type { NBStep } from '@/lib/algorithms/naiveBayes'
   import { ExecutionController } from '@/lib/execution/controller.svelte'
@@ -101,6 +109,20 @@
     geneticController.load(runGeneticAlgorithm())
   })
 
+  // --- Particle Swarm Optimization ---
+  const psoController = new ExecutionController<PSOStep>()
+
+  $effect(() => {
+    psoController.load(runPSO())
+  })
+
+  // --- Ant Colony Optimization ---
+  const acoController = new ExecutionController<ACOStep>()
+
+  $effect(() => {
+    acoController.load(runACO())
+  })
+
   // --- Naïve Bayes ---
   const naiveBayesController = new ExecutionController<NBStep>()
 
@@ -115,7 +137,11 @@
         ? prologController
         : selectedTopic === 'genetic'
           ? geneticController
-          : naiveBayesController,
+          : selectedTopic === 'pso'
+            ? psoController
+            : selectedTopic === 'aco'
+              ? acoController
+              : naiveBayesController,
   )
 
   let helpOpen = $state(false)
@@ -137,7 +163,11 @@
         ? prologPseudocode
         : selectedTopic === 'genetic'
           ? geneticPseudocode
-          : naiveBayesPseudocode,
+          : selectedTopic === 'pso'
+            ? psoPseudocode
+            : selectedTopic === 'aco'
+              ? acoPseudocode
+              : naiveBayesPseudocode,
   )
   const pseudocodeTitle = $derived(
     selectedTopic === 'search'
@@ -146,7 +176,11 @@
         ? localeStore.t('topics.prolog')
         : selectedTopic === 'genetic'
           ? localeStore.t('topics.genetic')
-          : localeStore.t('topics.naiveBayes'),
+          : selectedTopic === 'pso'
+            ? localeStore.t('topics.pso')
+            : selectedTopic === 'aco'
+              ? localeStore.t('topics.aco')
+              : localeStore.t('topics.naiveBayes'),
   )
 
   onMount(() => {
@@ -230,6 +264,14 @@
       {#if geneticController.current}
         <PopulationView state={geneticController.current.state} />
       {/if}
+    {:else if selectedTopic === 'pso'}
+      {#if psoController.current}
+        <ParticleSwarmView state={psoController.current.state} />
+      {/if}
+    {:else if selectedTopic === 'aco'}
+      {#if acoController.current}
+        <ACOGraphView state={acoController.current.state} />
+      {/if}
     {:else if naiveBayesController.current}
       <NaiveBayesView state={naiveBayesController.current.state} />
     {/if}
@@ -255,6 +297,14 @@
         {:else if selectedTopic === 'genetic'}
           {#if geneticController.current}
             <GeneticStatePanel state={geneticController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'pso'}
+          {#if psoController.current}
+            <PSOStatePanel state={psoController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'aco'}
+          {#if acoController.current}
+            <ACOStatePanel state={acoController.current.state} />
           {/if}
         {:else if naiveBayesController.current}
           <NaiveBayesStatePanel

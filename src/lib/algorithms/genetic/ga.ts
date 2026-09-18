@@ -1,6 +1,6 @@
 import { msg } from '@/lib/i18n/translate'
 
-import { createRng, randomInt } from './rng'
+import { createRng, randomInt } from '@/lib/random'
 import { cloneChromosome, cloneState, fitnessOf, genesToString } from './types'
 import type { Chromosome, GAState, GAStep } from './types'
 

@@ -5,7 +5,7 @@
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
-  export type Topic = 'search' | 'prolog' | 'genetic' | 'naiveBayes'
+  export type Topic = 'search' | 'prolog' | 'genetic' | 'pso' | 'aco' | 'naiveBayes'
 
   interface Props {
     selectedTopic: Topic
@@ -37,6 +37,8 @@
     { id: 'search', labelKey: 'sidebar.searchAlgorithms' },
     { id: 'prolog', labelKey: 'topics.prolog' },
     { id: 'genetic', labelKey: 'topics.genetic' },
+    { id: 'pso', labelKey: 'topics.pso' },
+    { id: 'aco', labelKey: 'topics.aco' },
     { id: 'naiveBayes', labelKey: 'topics.naiveBayes' },
   ]
 
