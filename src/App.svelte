@@ -15,6 +15,14 @@
   import PSOStatePanel from '@/components/pso/PSOStatePanel.svelte'
   import KNNStatePanel from '@/components/knn/KNNStatePanel.svelte'
   import KNNView from '@/components/knn/KNNView.svelte'
+  import LogRegStatePanel from '@/components/logreg/LogRegStatePanel.svelte'
+  import LogRegView from '@/components/logreg/LogRegView.svelte'
+  import LinRegStatePanel from '@/components/linreg/LinRegStatePanel.svelte'
+  import LinRegView from '@/components/linreg/LinRegView.svelte'
+  import KMeansStatePanel from '@/components/kmeans/KMeansStatePanel.svelte'
+  import KMeansView from '@/components/kmeans/KMeansView.svelte'
+  import QLearningStatePanel from '@/components/qlearning/QLearningStatePanel.svelte'
+  import QLearningView from '@/components/qlearning/QLearningView.svelte'
   import NaiveBayesStatePanel from '@/components/naiveBayes/NaiveBayesStatePanel.svelte'
   import NaiveBayesView from '@/components/naiveBayes/NaiveBayesView.svelte'
   import PrologStatePanel from '@/components/prolog/PrologStatePanel.svelte'
@@ -38,6 +46,14 @@
   import type { PSOStep } from '@/lib/algorithms/pso'
   import { knnPseudocode, runKNN } from '@/lib/algorithms/knn'
   import type { KNNStep } from '@/lib/algorithms/knn'
+  import { logRegPseudocode, runLogisticRegression } from '@/lib/algorithms/logreg'
+  import type { LogRegStep } from '@/lib/algorithms/logreg'
+  import { linRegPseudocode, runLinearRegression } from '@/lib/algorithms/linreg'
+  import type { LinRegStep } from '@/lib/algorithms/linreg'
+  import { kmeansPseudocode, runKMeans } from '@/lib/algorithms/kmeans'
+  import type { KMeansStep } from '@/lib/algorithms/kmeans'
+  import { qLearningPseudocode, runQLearning } from '@/lib/algorithms/qlearning'
+  import type { QLearningStep } from '@/lib/algorithms/qlearning'
   import { naiveBayesPseudocode, playTennisDataset, runNaiveBayes } from '@/lib/algorithms/naiveBayes'
   import type { NBStep } from '@/lib/algorithms/naiveBayes'
   import { ExecutionController } from '@/lib/execution/controller.svelte'
@@ -136,6 +152,34 @@
     knnController.load(runKNN())
   })
 
+  // --- Logistic Regression ---
+  const logRegController = new ExecutionController<LogRegStep>()
+
+  $effect(() => {
+    logRegController.load(runLogisticRegression())
+  })
+
+  // --- Linear Regression ---
+  const linRegController = new ExecutionController<LinRegStep>()
+
+  $effect(() => {
+    linRegController.load(runLinearRegression())
+  })
+
+  // --- K-Means Clustering ---
+  const kmeansController = new ExecutionController<KMeansStep>()
+
+  $effect(() => {
+    kmeansController.load(runKMeans())
+  })
+
+  // --- Q-Learning ---
+  const qLearningController = new ExecutionController<QLearningStep>()
+
+  $effect(() => {
+    qLearningController.load(runQLearning())
+  })
+
   // --- Naïve Bayes ---
   const naiveBayesController = new ExecutionController<NBStep>()
 
@@ -143,21 +187,32 @@
     naiveBayesController.load(runNaiveBayes())
   })
 
-  const controller = $derived(
-    selectedTopic === 'search'
-      ? searchController
-      : selectedTopic === 'prolog'
-        ? prologController
-        : selectedTopic === 'genetic'
-          ? geneticController
-          : selectedTopic === 'pso'
-            ? psoController
-            : selectedTopic === 'aco'
-              ? acoController
-              : selectedTopic === 'knn'
-                ? knnController
-                : naiveBayesController,
-  )
+  const controller = $derived.by(() => {
+    switch (selectedTopic) {
+      case 'search':
+        return searchController
+      case 'prolog':
+        return prologController
+      case 'genetic':
+        return geneticController
+      case 'pso':
+        return psoController
+      case 'aco':
+        return acoController
+      case 'knn':
+        return knnController
+      case 'logreg':
+        return logRegController
+      case 'linreg':
+        return linRegController
+      case 'kmeans':
+        return kmeansController
+      case 'qlearning':
+        return qLearningController
+      case 'naiveBayes':
+        return naiveBayesController
+    }
+  })
 
   let helpOpen = $state(false)
   let pseudocodeVisible = $state(pseudocodeVisibilityStore.visible)
@@ -171,36 +226,59 @@
           .filter((entry): entry is Message => Boolean(entry)),
   )
 
-  const pseudocodeLines = $derived(
-    selectedTopic === 'search'
-      ? algorithm.pseudocode
-      : selectedTopic === 'prolog'
-        ? prologPseudocode
-        : selectedTopic === 'genetic'
-          ? geneticPseudocode
-          : selectedTopic === 'pso'
-            ? psoPseudocode
-            : selectedTopic === 'aco'
-              ? acoPseudocode
-              : selectedTopic === 'knn'
-                ? knnPseudocode
-                : naiveBayesPseudocode,
-  )
-  const pseudocodeTitle = $derived(
-    selectedTopic === 'search'
-      ? localeStore.t(`algorithms.${algorithm.id}.name`)
-      : selectedTopic === 'prolog'
-        ? localeStore.t('topics.prolog')
-        : selectedTopic === 'genetic'
-          ? localeStore.t('topics.genetic')
-          : selectedTopic === 'pso'
-            ? localeStore.t('topics.pso')
-            : selectedTopic === 'aco'
-              ? localeStore.t('topics.aco')
-              : selectedTopic === 'knn'
-                ? localeStore.t('topics.knn')
-                : localeStore.t('topics.naiveBayes'),
-  )
+  const pseudocodeLines = $derived.by(() => {
+    switch (selectedTopic) {
+      case 'search':
+        return algorithm.pseudocode
+      case 'prolog':
+        return prologPseudocode
+      case 'genetic':
+        return geneticPseudocode
+      case 'pso':
+        return psoPseudocode
+      case 'aco':
+        return acoPseudocode
+      case 'knn':
+        return knnPseudocode
+      case 'logreg':
+        return logRegPseudocode
+      case 'linreg':
+        return linRegPseudocode
+      case 'kmeans':
+        return kmeansPseudocode
+      case 'qlearning':
+        return qLearningPseudocode
+      case 'naiveBayes':
+        return naiveBayesPseudocode
+    }
+  })
+
+  const pseudocodeTitle = $derived.by(() => {
+    switch (selectedTopic) {
+      case 'search':
+        return localeStore.t(`algorithms.${algorithm.id}.name`)
+      case 'prolog':
+        return localeStore.t('topics.prolog')
+      case 'genetic':
+        return localeStore.t('topics.genetic')
+      case 'pso':
+        return localeStore.t('topics.pso')
+      case 'aco':
+        return localeStore.t('topics.aco')
+      case 'knn':
+        return localeStore.t('topics.knn')
+      case 'logreg':
+        return localeStore.t('topics.logreg')
+      case 'linreg':
+        return localeStore.t('topics.linreg')
+      case 'kmeans':
+        return localeStore.t('topics.kmeans')
+      case 'qlearning':
+        return localeStore.t('topics.qlearning')
+      case 'naiveBayes':
+        return localeStore.t('topics.naiveBayes')
+    }
+  })
 
   onMount(() => {
     return registerGlobalShortcuts({
@@ -298,6 +376,22 @@
       {#if knnController.current}
         <KNNView state={knnController.current.state} />
       {/if}
+    {:else if selectedTopic === 'logreg'}
+      {#if logRegController.current}
+        <LogRegView state={logRegController.current.state} />
+      {/if}
+    {:else if selectedTopic === 'linreg'}
+      {#if linRegController.current}
+        <LinRegView state={linRegController.current.state} />
+      {/if}
+    {:else if selectedTopic === 'kmeans'}
+      {#if kmeansController.current}
+        <KMeansView state={kmeansController.current.state} />
+      {/if}
+    {:else if selectedTopic === 'qlearning'}
+      {#if qLearningController.current}
+        <QLearningView state={qLearningController.current.state} />
+      {/if}
     {:else if naiveBayesController.current}
       <NaiveBayesView state={naiveBayesController.current.state} />
     {/if}
@@ -335,6 +429,22 @@
         {:else if selectedTopic === 'knn'}
           {#if knnController.current}
             <KNNStatePanel state={knnController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'logreg'}
+          {#if logRegController.current}
+            <LogRegStatePanel state={logRegController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'linreg'}
+          {#if linRegController.current}
+            <LinRegStatePanel state={linRegController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'kmeans'}
+          {#if kmeansController.current}
+            <KMeansStatePanel state={kmeansController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'qlearning'}
+          {#if qLearningController.current}
+            <QLearningStatePanel state={qLearningController.current.state} />
           {/if}
         {:else if naiveBayesController.current}
           <NaiveBayesStatePanel

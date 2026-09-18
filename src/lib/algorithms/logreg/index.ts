@@ -1,0 +1,5 @@
+export { BOUNDS, logRegDataset } from './dataset'
+export type { LabeledPoint } from './dataset'
+export { logRegPseudocode, runLogisticRegression } from './logreg'
+export type { LogRegState, LogRegStep, PointPrediction, Weights } from './types'
+export { sigmoid } from './types'

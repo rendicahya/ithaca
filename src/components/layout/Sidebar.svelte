@@ -5,7 +5,18 @@
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import { cn } from '@/lib/utils'
 
-  export type Topic = 'search' | 'prolog' | 'genetic' | 'pso' | 'aco' | 'knn' | 'naiveBayes'
+  export type Topic =
+    | 'search'
+    | 'prolog'
+    | 'genetic'
+    | 'pso'
+    | 'aco'
+    | 'knn'
+    | 'naiveBayes'
+    | 'logreg'
+    | 'linreg'
+    | 'kmeans'
+    | 'qlearning'
 
   interface Props {
     selectedTopic: Topic
@@ -41,6 +52,10 @@
     { id: 'aco', labelKey: 'topics.aco' },
     { id: 'knn', labelKey: 'topics.knn' },
     { id: 'naiveBayes', labelKey: 'topics.naiveBayes' },
+    { id: 'logreg', labelKey: 'topics.logreg' },
+    { id: 'linreg', labelKey: 'topics.linreg' },
+    { id: 'kmeans', labelKey: 'topics.kmeans' },
+    { id: 'qlearning', labelKey: 'topics.qlearning' },
   ]
 
   const upcomingTopicKeys = ['topics.propositional', 'topics.firstOrder']
