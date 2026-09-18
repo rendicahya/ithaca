@@ -1,7 +1,7 @@
 import type { Topic } from '@/components/layout/Sidebar.svelte'
 
 const STORAGE_KEY = 'ithaca-last-topic'
-const VALID_TOPICS: Topic[] = ['search', 'prolog', 'genetic', 'pso', 'aco', 'naiveBayes']
+const VALID_TOPICS: Topic[] = ['search', 'prolog', 'genetic', 'pso', 'aco', 'knn', 'naiveBayes']
 
 function isTopic(value: string): value is Topic {
   return (VALID_TOPICS as string[]).includes(value)

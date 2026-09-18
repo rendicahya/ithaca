@@ -13,6 +13,8 @@
   import ACOStatePanel from '@/components/aco/ACOStatePanel.svelte'
   import ParticleSwarmView from '@/components/pso/ParticleSwarmView.svelte'
   import PSOStatePanel from '@/components/pso/PSOStatePanel.svelte'
+  import KNNStatePanel from '@/components/knn/KNNStatePanel.svelte'
+  import KNNView from '@/components/knn/KNNView.svelte'
   import NaiveBayesStatePanel from '@/components/naiveBayes/NaiveBayesStatePanel.svelte'
   import NaiveBayesView from '@/components/naiveBayes/NaiveBayesView.svelte'
   import PrologStatePanel from '@/components/prolog/PrologStatePanel.svelte'
@@ -34,6 +36,8 @@
   import type { ACOStep } from '@/lib/algorithms/aco'
   import { psoPseudocode, runPSO } from '@/lib/algorithms/pso'
   import type { PSOStep } from '@/lib/algorithms/pso'
+  import { knnPseudocode, runKNN } from '@/lib/algorithms/knn'
+  import type { KNNStep } from '@/lib/algorithms/knn'
   import { naiveBayesPseudocode, playTennisDataset, runNaiveBayes } from '@/lib/algorithms/naiveBayes'
   import type { NBStep } from '@/lib/algorithms/naiveBayes'
   import { ExecutionController } from '@/lib/execution/controller.svelte'
@@ -125,6 +129,13 @@
     acoController.load(runACO())
   })
 
+  // --- K-Nearest Neighbor ---
+  const knnController = new ExecutionController<KNNStep>()
+
+  $effect(() => {
+    knnController.load(runKNN())
+  })
+
   // --- Naïve Bayes ---
   const naiveBayesController = new ExecutionController<NBStep>()
 
@@ -143,7 +154,9 @@
             ? psoController
             : selectedTopic === 'aco'
               ? acoController
-              : naiveBayesController,
+              : selectedTopic === 'knn'
+                ? knnController
+                : naiveBayesController,
   )
 
   let helpOpen = $state(false)
@@ -169,7 +182,9 @@
             ? psoPseudocode
             : selectedTopic === 'aco'
               ? acoPseudocode
-              : naiveBayesPseudocode,
+              : selectedTopic === 'knn'
+                ? knnPseudocode
+                : naiveBayesPseudocode,
   )
   const pseudocodeTitle = $derived(
     selectedTopic === 'search'
@@ -182,7 +197,9 @@
             ? localeStore.t('topics.pso')
             : selectedTopic === 'aco'
               ? localeStore.t('topics.aco')
-              : localeStore.t('topics.naiveBayes'),
+              : selectedTopic === 'knn'
+                ? localeStore.t('topics.knn')
+                : localeStore.t('topics.naiveBayes'),
   )
 
   onMount(() => {
@@ -277,6 +294,10 @@
       {#if acoController.current}
         <ACOGraphView state={acoController.current.state} />
       {/if}
+    {:else if selectedTopic === 'knn'}
+      {#if knnController.current}
+        <KNNView state={knnController.current.state} />
+      {/if}
     {:else if naiveBayesController.current}
       <NaiveBayesView state={naiveBayesController.current.state} />
     {/if}
@@ -310,6 +331,10 @@
         {:else if selectedTopic === 'aco'}
           {#if acoController.current}
             <ACOStatePanel state={acoController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'knn'}
+          {#if knnController.current}
+            <KNNStatePanel state={knnController.current.state} />
           {/if}
         {:else if naiveBayesController.current}
           <NaiveBayesStatePanel
