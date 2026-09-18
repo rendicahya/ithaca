@@ -47,6 +47,7 @@
   import { localeStore } from '@/lib/i18n/locale.svelte'
   import type { Message } from '@/lib/i18n/translate'
   import { lastTopicStore } from '@/lib/navigation.svelte'
+  import { pseudocodeVisibilityStore } from '@/lib/pseudocode.svelte'
   import { defaultDatabase, defaultQuery, prologPseudocode, solveProlog } from '@/lib/prolog'
   import type { ProofStep } from '@/lib/prolog'
   import { registerGlobalShortcuts } from '@/lib/shortcuts/shortcuts'
@@ -146,7 +147,7 @@
   )
 
   let helpOpen = $state(false)
-  let pseudocodeVisible = $state(true)
+  let pseudocodeVisible = $state(pseudocodeVisibilityStore.visible)
 
   const traceEntries = $derived(
     showGraphEditor
@@ -329,7 +330,10 @@
       activeLine={controller.current?.activePseudocodeLine ?? 0}
       title={pseudocodeTitle}
       visible={pseudocodeVisible}
-      onToggleVisible={() => (pseudocodeVisible = !pseudocodeVisible)}
+      onToggleVisible={() => {
+        pseudocodeVisible = !pseudocodeVisible
+        pseudocodeVisibilityStore.set(pseudocodeVisible)
+      }}
     />
   {/snippet}
 
