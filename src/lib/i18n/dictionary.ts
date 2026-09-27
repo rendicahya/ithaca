@@ -273,7 +273,9 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.example.knapsack.name': 'Knapsack Packing',
     'genetic.example.knapsack.description': 'Each chromosome is a candidate packing list: gene i = 1 means item i is packed. Fitness is the total value of the packed items — but exceeding the {capacity} kg capacity scores zero, however valuable the items are.',
     'genetic.example.route.name': 'Shortest Route',
-    'genetic.example.route.description': "Each chromosome is a candidate visiting order for all {count} cities before returning to the start. Fitness rewards a shorter total travel distance — unlike the knapsack example, it has nothing to do with counting genes.",
+    'genetic.example.route.description': "Each chromosome is a candidate visiting order for all {count} cities before returning to the start. Fitness rewards a shorter total travel distance.",
+    'genetic.route.explanation': 'Each city has coordinates ({x}, {y}) marking its position on the map, e.g. City 1 ({x0}, {y0}) is located at x = {x0}, y = {y0}. A chromosome lists the cities in the order they are visited.',
+    'genetic.route.fitnessExplanation': 'Fitness is calculated as {scale} minus the total distance of the tour (the sum of the straight-line distance between each consecutive pair of cities, including the return to the starting city). A shorter tour therefore has a higher fitness.',
 
     'genetic.knapsack.item': 'Item {n}',
     'genetic.knapsack.weight': 'Weight',
@@ -286,7 +288,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.route.order': 'Visiting order',
     'genetic.route.distance': 'Total distance',
 
-    'genetic.init': 'A random population of {size} chromosomes is created, each with {length} genes. Fitness stays hidden until it is actually evaluated.',
+    'genetic.init': 'A random population of {size} chromosomes is created, each with {length} genes.',
     'genetic.init.trace': 'Initialize population ({size} chromosomes)',
     'genetic.evaluate': 'Generation {gen}: fitness evaluated for every chromosome. Best so far is {best} with fitness {fitness}.',
     'genetic.evaluate.trace': 'Evaluate generation {gen} (best fitness = {fitness})',
@@ -769,7 +771,9 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.example.knapsack.name': 'Pengepakan Ransel',
     'genetic.example.knapsack.description': 'Setiap kromosom adalah daftar barang kandidat: gen ke-i = 1 berarti barang ke-i dimasukkan. Fitness adalah total nilai barang yang dimasukkan — namun jika melebihi kapasitas {capacity} kg, fitness menjadi nol, seberapa pun berharganya barang tersebut.',
     'genetic.example.route.name': 'Rute Terpendek',
-    'genetic.example.route.description': 'Setiap kromosom adalah urutan kunjungan kandidat untuk semua {count} kota sebelum kembali ke titik awal. Fitness memberi nilai lebih tinggi untuk total jarak tempuh yang lebih pendek — berbeda dengan contoh ransel, ini tidak ada hubungannya dengan menghitung gen.',
+    'genetic.example.route.description': 'Setiap kromosom adalah urutan kunjungan kandidat untuk semua {count} kota sebelum kembali ke titik awal. Fitness memberi nilai lebih tinggi untuk total jarak tempuh yang lebih pendek.',
+    'genetic.route.explanation': 'Setiap kota memiliki koordinat ({x}, {y}) yang menandai posisinya di peta, contohnya Kota 1 ({x0}, {y0}) berarti kota tersebut berada di posisi x = {x0}, y = {y0}. Sebuah kromosom berisi urutan kota yang dikunjungi.',
+    'genetic.route.fitnessExplanation': 'Nilai fitness dihitung sebagai {scale} dikurangi total jarak rute (jumlah jarak garis lurus antar kota yang dikunjungi secara berurutan, termasuk kembali ke kota awal). Semakin pendek rutenya, semakin tinggi nilai fitness-nya.',
 
     'genetic.knapsack.item': 'Barang {n}',
     'genetic.knapsack.weight': 'Berat',
@@ -782,7 +786,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.route.order': 'Urutan kunjungan',
     'genetic.route.distance': 'Total jarak',
 
-    'genetic.init': 'Populasi acak berisi {size} kromosom dibuat, masing-masing dengan {length} gen. Fitness tetap tersembunyi sampai benar-benar dievaluasi.',
+    'genetic.init': 'Populasi acak berisi {size} kromosom dibuat, masing-masing dengan {length} gen.',
     'genetic.init.trace': 'Inisialisasi populasi ({size} kromosom)',
     'genetic.evaluate': 'Generasi {gen}: fitness dihitung untuk setiap kromosom. Terbaik sejauh ini adalah {best} dengan fitness {fitness}.',
     'genetic.evaluate.trace': 'Evaluasi generasi {gen} (fitness terbaik = {fitness})',

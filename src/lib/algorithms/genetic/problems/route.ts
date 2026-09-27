@@ -35,15 +35,15 @@ export function tourDistance(genes: number[]): number {
 
 const CHROMOSOME_LENGTH = ROUTE_CITIES.length
 const POPULATION_SIZE = 6
-const MAX_GENERATIONS = 8
+const MAX_GENERATIONS = 3
 const CROSSOVER_RATE = 0.9
 const MUTATION_RATE = 0.3
-const SEED = 6
+const SEED = 5
 
 // Larger than any possible tour distance for these coordinates, so fitness
 // (which the algorithm maximizes) is always positive and shorter tours score
 // higher — the algorithm never sees "distance" directly, only "fitness".
-const SCALE = 40
+export const SCALE = 40
 
 /** Rounded so equal-length tours compare as equal fitness despite floating-point distance sums. */
 export function routeFitness(genes: number[]): number {
