@@ -48,12 +48,6 @@
               <Gem class="size-3" />{item.value}
             </span>
           </div>
-          <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted" title={localeStore.t('genetic.knapsack.weight')}>
-            <div
-              class="h-full rounded-full bg-primary"
-              style={`width: ${Math.min(100, (item.weight / KNAPSACK_CAPACITY) * 100)}%`}
-            ></div>
-          </div>
         </div>
       {/each}
     </div>
@@ -61,11 +55,11 @@
       <span class="inline-flex items-center gap-0.5"><Weight class="size-3" /> {localeStore.t('genetic.knapsack.weight')}</span>
       ·
       <span class="inline-flex items-center gap-0.5 text-node-path"><Gem class="size-3" /> {localeStore.t('genetic.knapsack.value')}</span>
-      · {localeStore.t(msg('genetic.knapsack.capacityBarHint', { capacity: KNAPSACK_CAPACITY }))}
     </p>
     {#if best?.evaluated}
       {@const decoded = knapsackDecode(best.genes)}
       <p class="mt-2 font-mono text-muted-foreground">
+        <span class="font-semibold text-node-path">{localeStore.t('genetic.bestEver')}</span> —
         {localeStore.t('genetic.knapsack.packed')}:
         {decoded.includedIndices.length > 0
           ? decoded.includedIndices
@@ -136,6 +130,7 @@
     {#if best?.evaluated}
       {@const decoded = routeDecode(best.genes)}
       <p class="mt-2 font-mono text-muted-foreground">
+        <span class="font-semibold text-node-path">{localeStore.t('genetic.bestEver')}</span> —
         {localeStore.t('genetic.route.order')}: {decoded.order.map((i) => `#${i + 1}`).join(' → ')} → #{decoded
           .order[0] + 1}
         · {localeStore.t('genetic.route.distance')}: {decoded.distance.toFixed(1)}
