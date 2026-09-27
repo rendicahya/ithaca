@@ -16,19 +16,51 @@
   // colors elsewhere, just extended to cover a 5-individual wheel.
   const SLICE_COLORS = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed']
 
-  const wheelStops = $derived.by(() => {
+  const WHEEL_CENTER = 50
+  const WHEEL_RADIUS = 46
+  const LABEL_RADIUS = 30
+
+  function pointOnCircle(deg: number): { x: number; y: number } {
+    const rad = (deg * Math.PI) / 180
+    return {
+      x: WHEEL_CENTER + WHEEL_RADIUS * Math.sin(rad),
+      y: WHEEL_CENTER - WHEEL_RADIUS * Math.cos(rad),
+    }
+  }
+
+  function labelPoint(deg: number): { x: number; y: number } {
+    const rad = (deg * Math.PI) / 180
+    return {
+      x: WHEEL_CENTER + LABEL_RADIUS * Math.sin(rad),
+      y: WHEEL_CENTER - LABEL_RADIUS * Math.cos(rad),
+    }
+  }
+
+  function sliceArcPath(startDeg: number, endDeg: number): string {
+    const start = pointOnCircle(startDeg)
+    const end = pointOnCircle(endDeg)
+    const largeArc = endDeg - startDeg > 180 ? 1 : 0
+    return `M ${WHEEL_CENTER} ${WHEEL_CENTER} L ${start.x} ${start.y} A ${WHEEL_RADIUS} ${WHEEL_RADIUS} 0 ${largeArc} 1 ${end.x} ${end.y} Z`
+  }
+
+  const wheelSlices = $derived.by(() => {
     let acc = 0
     return sel.population.map((p, i) => {
-      const start = (acc / sel.totalFitness) * 100
+      const startDeg = (acc / sel.totalFitness) * 360
       acc += p.fitness
-      const end = (acc / sel.totalFitness) * 100
-      return { id: p.id, color: SLICE_COLORS[i % SLICE_COLORS.length], start, end }
+      const endDeg = (acc / sel.totalFitness) * 360
+      const mid = labelPoint((startDeg + endDeg) / 2)
+      return {
+        id: p.id,
+        fitness: p.fitness,
+        color: SLICE_COLORS[i % SLICE_COLORS.length],
+        path: sliceArcPath(startDeg, endDeg),
+        labelX: mid.x,
+        labelY: mid.y,
+        wide: endDeg - startDeg >= 20,
+      }
     })
   })
-
-  const wheelGradient = $derived(
-    wheelStops.map((s) => `${s.color} ${s.start}% ${s.end}%`).join(', '),
-  )
 
   const showRoulette = $derived(
     sel.phase === 'rouletteSetup' ||
@@ -92,10 +124,24 @@
       </h3>
       {#if showRoulette}
         <div class="relative mx-auto size-36">
-          <div
-            class="size-36 rounded-full border border-border"
-            style={`background: conic-gradient(${wheelGradient})`}
-          ></div>
+          <svg viewBox="0 0 100 100" class="size-36 rounded-full border border-border">
+            {#each wheelSlices as slice (slice.id)}
+              <path d={slice.path} fill={slice.color} stroke="var(--color-card)" stroke-width="0.5" />
+              {#if slice.wide}
+                <text
+                  x={slice.labelX}
+                  y={slice.labelY}
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                  font-size="7"
+                  font-weight="600"
+                  fill="white"
+                >
+                  {slice.id}
+                </text>
+              {/if}
+            {/each}
+          </svg>
           {#if sel.spinFraction !== null}
             <div
               class="absolute left-1/2 top-1/2 h-0.5 w-16 origin-left rounded-full bg-foreground transition-transform ease-out"
