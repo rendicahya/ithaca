@@ -138,7 +138,6 @@ export const routeConfig: GAProblemConfig = {
   mutationRate: MUTATION_RATE,
   mutationKind: 'swap',
   seed: SEED,
-  targetFitness: bruteForceBestFitness(),
   maxFitness: bruteForceBestFitness(),
   randomGenes: shuffledPermutation,
   fitnessOf: routeFitness,

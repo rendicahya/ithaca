@@ -8,25 +8,23 @@ import type { Chromosome, GAProblemConfig, GAState, GAStep } from './types'
 // are named abstractly on purpose so the same pseudocode explains both a
 // binary-chromosome problem and a permutation-chromosome one. The selection
 // mechanism itself (roulette wheel, tournament, ...) is covered separately,
-// on the Selection Methods page.
+// on the Selection Methods page. There is no fitness target: the only
+// stopping condition is the generation budget, so every run evolves for
+// exactly maxGenerations generations and reports whatever it found.
 export const geneticPseudocode = [
   'initialize population P randomly',
   'evaluate fitness of each individual in P',
-  'if best fitness in P equals target',
-  '    return best individual (solution found)',
   'while generation < maxGenerations',
   '    newPopulation ← empty',
   '    while newPopulation is not full',
-  '        parentA, parentB ← select(P)',
+  '        parentA, parentB ← select(P) — two distinct individuals',
   '        with probability crossoverRate: offspringA, offspringB ← crossover(parentA, parentB)',
   '        with probability mutationRate: mutate(offspringA); mutate(offspringB)',
   '        add offspringA, offspringB to newPopulation',
   '    P ← newPopulation',
   '    generation ← generation + 1',
   '    evaluate fitness of each individual in P',
-  '    if best fitness in P equals target',
-  '        return best individual (solution found)',
-  'return best individual found (generations exhausted)',
+  'return best individual found',
 ]
 
 function clearTransient(state: GAState): void {
@@ -64,6 +62,21 @@ export function runGA(config: GAProblemConfig): GAStep[] {
     return { winner, candidates: [a, b] }
   }
 
+  /** Runs two tournaments, re-running the second if it happens to pick the same winner as the first — a chromosome should never be crossed over with itself. */
+  function selectDistinctParents(population: Chromosome[]): {
+    a: { winner: Chromosome; candidates: Chromosome[] }
+    b: { winner: Chromosome; candidates: Chromosome[] }
+  } {
+    const a = tournamentSelect(population)
+    let b = tournamentSelect(population)
+    let guard = 0
+    while (b.winner.id === a.winner.id && guard < 50) {
+      b = tournamentSelect(population)
+      guard++
+    }
+    return { a, b }
+  }
+
   const population = Array.from({ length: config.populationSize }, (_, i) =>
     randomChromosome(`C${i + 1}`),
   )
@@ -73,7 +86,6 @@ export function runGA(config: GAProblemConfig): GAStep[] {
     generation: 1,
     maxGenerations: config.maxGenerations,
     chromosomeLength: config.chromosomeLength,
-    targetFitness: config.targetFitness,
     maxFitness: config.maxFitness,
     crossoverRate: config.crossoverRate,
     mutationRate: config.mutationRate,
@@ -90,7 +102,6 @@ export function runGA(config: GAProblemConfig): GAStep[] {
     bestChromosome: null,
     bestFitnessEver: -Infinity,
     done: false,
-    found: false,
   }
 
   steps.push({
@@ -103,7 +114,7 @@ export function runGA(config: GAProblemConfig): GAStep[] {
     traceEntry: msg('genetic.init.trace', { size: config.populationSize }),
   })
 
-  function pushEvaluateAndCheck(evalLine: number, checkLine: number, returnLine: number): boolean {
+  function pushEvaluate(evalLine: number): void {
     state.population = state.population.map((c) => ({
       ...c,
       fitness: config.fitnessOf(c.genes),
@@ -125,57 +136,28 @@ export function runGA(config: GAProblemConfig): GAStep[] {
       }),
       traceEntry: msg('genetic.evaluate.trace', { gen: state.generation, fitness: genBest.fitness }),
     })
-
-    const solved = genBest.fitness >= state.targetFitness
-    steps.push({
-      state: cloneState(state),
-      activePseudocodeLine: checkLine,
-      explanation: solved
-        ? msg('genetic.checkGoal.found', { chromosome: genBest.id, fitness: genBest.fitness })
-        : msg('genetic.checkGoal.notFound', { best: genBest.fitness, target: state.targetFitness }),
-      traceEntry: solved
-        ? msg('genetic.checkGoal.found.trace', { chromosome: genBest.id })
-        : msg('genetic.checkGoal.notFound.trace', { fitness: genBest.fitness }),
-    })
-
-    if (solved) {
-      state.done = true
-      state.found = true
-      steps.push({
-        state: cloneState(state),
-        activePseudocodeLine: returnLine,
-        explanation: msg('genetic.solutionFound', {
-          chromosome: genBest.id,
-          genes: genesToString(genBest.genes),
-          fitness: genBest.fitness,
-        }),
-        traceEntry: msg('genetic.solutionFound.trace', { chromosome: genBest.id }),
-      })
-    }
-    return solved
   }
 
-  if (pushEvaluateAndCheck(2, 3, 4)) return steps
+  pushEvaluate(2)
 
-  while (state.generation <= config.maxGenerations && !state.done) {
+  while (state.generation < config.maxGenerations) {
     clearTransient(state)
     state.newPopulation = []
 
     steps.push({
       state: cloneState(state),
-      activePseudocodeLine: 6,
+      activePseudocodeLine: 4,
       explanation: msg('genetic.newPopulationStart', { gen: state.generation }),
       traceEntry: msg('genetic.newPopulationStart.trace', { gen: state.generation }),
     })
 
     const pairs = config.populationSize / 2
     for (let p = 0; p < pairs; p++) {
-      const selA = tournamentSelect(state.population)
-      const selB = tournamentSelect(state.population)
-      state.parentA = cloneChromosome(selA.winner)
-      state.parentB = cloneChromosome(selB.winner)
-      state.tournamentCandidatesA = selA.candidates.map(cloneChromosome)
-      state.tournamentCandidatesB = selB.candidates.map(cloneChromosome)
+      const sel = selectDistinctParents(state.population)
+      state.parentA = cloneChromosome(sel.a.winner)
+      state.parentB = cloneChromosome(sel.b.winner)
+      state.tournamentCandidatesA = sel.a.candidates.map(cloneChromosome)
+      state.tournamentCandidatesB = sel.b.candidates.map(cloneChromosome)
       state.crossoverKind = null
       state.crossoverPoints = []
       state.offspring = null
@@ -183,7 +165,7 @@ export function runGA(config: GAProblemConfig): GAStep[] {
 
       steps.push({
         state: cloneState(state),
-        activePseudocodeLine: 8,
+        activePseudocodeLine: 6,
         explanation: msg('genetic.selectParents', {
           a: state.parentA.id,
           fitnessA: state.parentA.fitness,
@@ -229,7 +211,7 @@ export function runGA(config: GAProblemConfig): GAStep[] {
 
       steps.push({
         state: cloneState(state),
-        activePseudocodeLine: 9,
+        activePseudocodeLine: 7,
         explanation: !doCrossover
           ? msg('genetic.crossover.skipped', { a: state.parentA.id, b: state.parentB.id })
           : state.crossoverKind === 'point'
@@ -260,7 +242,7 @@ export function runGA(config: GAProblemConfig): GAStep[] {
       const anyMutation = mutA.mutatedIndices.length > 0 || mutB.mutatedIndices.length > 0
       steps.push({
         state: cloneState(state),
-        activePseudocodeLine: 10,
+        activePseudocodeLine: 8,
         explanation: !anyMutation
           ? msg('genetic.mutate.none', { a: offspringA.id, b: offspringB.id })
           : config.mutationKind === 'swap'
@@ -285,7 +267,7 @@ export function runGA(config: GAProblemConfig): GAStep[] {
       ]
       steps.push({
         state: cloneState(state),
-        activePseudocodeLine: 11,
+        activePseudocodeLine: 9,
         explanation: msg('genetic.addOffspring', {
           a: offspringA.id,
           b: offspringB.id,
@@ -303,25 +285,24 @@ export function runGA(config: GAProblemConfig): GAStep[] {
 
     steps.push({
       state: cloneState(state),
-      activePseudocodeLine: 12,
+      activePseudocodeLine: 11,
       explanation: msg('genetic.newGeneration', { gen: state.generation }),
       traceEntry: msg('genetic.newGeneration.trace', { gen: state.generation }),
     })
 
-    if (pushEvaluateAndCheck(14, 15, 16)) return steps
+    pushEvaluate(12)
   }
 
   state.done = true
-  state.found = false
   const best = state.bestChromosome as Chromosome
   steps.push({
     state: cloneState(state),
-    activePseudocodeLine: 17,
+    activePseudocodeLine: 13,
     explanation: msg('genetic.generationsExhausted', {
       chromosome: best.id,
       genes: genesToString(best.genes),
       fitness: state.bestFitnessEver,
-      target: state.targetFitness,
+      gen: state.generation,
     }),
     traceEntry: msg('genetic.generationsExhausted.trace', { fitness: state.bestFitnessEver }),
   })

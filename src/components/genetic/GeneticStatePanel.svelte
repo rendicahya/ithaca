@@ -87,7 +87,7 @@
         {state.bestChromosome.id} = {genesToString(state.bestChromosome.genes)}
       </p>
       <p class="mt-1 text-xs text-muted-foreground">
-        {localeStore.t('genetic.fitness')}: {state.bestFitnessEver} / {state.targetFitness}
+        {localeStore.t('genetic.fitness')}: {state.bestFitnessEver} / {state.maxFitness}
       </p>
     {:else}
       <span class="text-sm text-muted-foreground">—</span>

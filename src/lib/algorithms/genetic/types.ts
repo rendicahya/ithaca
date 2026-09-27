@@ -21,7 +21,6 @@ export interface GAState {
   generation: number
   maxGenerations: number
   chromosomeLength: number
-  targetFitness: number
   maxFitness: number
   crossoverRate: number
   mutationRate: number
@@ -41,7 +40,6 @@ export interface GAState {
   bestChromosome: Chromosome | null
   bestFitnessEver: number
   done: boolean
-  found: boolean
 }
 
 export interface GAStep {
@@ -99,7 +97,6 @@ export interface GAProblemConfig {
   mutationRate: number
   mutationKind: MutationKind
   seed: number
-  targetFitness: number
   maxFitness: number
   randomGenes: (rng: () => number) => number[]
   fitnessOf: (genes: number[]) => number

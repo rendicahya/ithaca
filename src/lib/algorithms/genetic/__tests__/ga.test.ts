@@ -14,13 +14,16 @@ describe.each([{ id: 'knapsack' as const }, { id: 'route' as const }])(
       expect(last.state.done).toBe(true)
     })
 
-    it('finds the optimal solution within the generation budget', () => {
-      expect(last.state.found).toBe(true)
-      expect(last.state.bestFitnessEver).toBe(last.state.targetFitness)
+    it('always runs for the full generation budget (no fitness-target early stop)', () => {
+      expect(last.state.generation).toBe(last.state.maxGenerations)
     })
 
-    it('never exceeds the configured maximum number of generations', () => {
-      expect(last.state.generation).toBeLessThanOrEqual(last.state.maxGenerations)
+    it('never picks the same individual as both parents', () => {
+      for (const step of steps) {
+        if (step.state.parentA && step.state.parentB) {
+          expect(step.state.parentA.id).not.toBe(step.state.parentB.id)
+        }
+      }
     })
 
     it('keeps population size constant at every step where a population exists', () => {
@@ -42,8 +45,8 @@ describe.each([{ id: 'knapsack' as const }, { id: 'route' as const }])(
       expect(steps[0].state.population.every((c) => !c.evaluated)).toBe(true)
     })
 
-    it('records a solutionFound step as the very last step', () => {
-      expect(last.traceEntry?.key).toBe('genetic.solutionFound.trace')
+    it('records a generationsExhausted step as the very last step', () => {
+      expect(last.traceEntry?.key).toBe('genetic.generationsExhausted.trace')
     })
 
     it('every step references a valid pseudocode line', () => {

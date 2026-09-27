@@ -67,9 +67,6 @@
       <Badge variant="default" class="font-mono">
         {localeStore.t('genetic.generation')}: {state.generation} / {state.maxGenerations}
       </Badge>
-      <Badge variant="outline" class="font-mono">
-        {localeStore.t('genetic.target')}: {state.targetFitness}
-      </Badge>
       <Badge variant="muted" class="font-mono">
         {localeStore.t('genetic.bestEver')}: {state.bestChromosome ? state.bestFitnessEver : '—'}
       </Badge>
@@ -192,9 +189,7 @@
           {localeStore.t('genetic.result')}
         </h3>
         <p class="mb-1.5 text-xs text-muted-foreground">
-          {state.found
-            ? localeStore.t('genetic.resultFound')
-            : localeStore.t(msg('genetic.resultExhausted', { gen: state.generation }))}
+          {localeStore.t(msg('genetic.resultExhausted', { gen: state.generation }))}
         </p>
         {#if state.bestChromosome}
           <GeneRow

@@ -62,7 +62,7 @@ export function knapsackDecode(genes: number[]): {
 
 const CHROMOSOME_LENGTH = KNAPSACK_ITEMS.length
 const POPULATION_SIZE = 6
-const MAX_GENERATIONS = 8
+const MAX_GENERATIONS = 3
 const CROSSOVER_RATE = 0.9
 const MUTATION_RATE = 0.1
 const SEED = 11
@@ -98,7 +98,6 @@ export const knapsackConfig: GAProblemConfig = {
   mutationRate: MUTATION_RATE,
   mutationKind: 'flip',
   seed: SEED,
-  targetFitness: bruteForceOptimalValue(),
   maxFitness: bruteForceOptimalValue(),
   randomGenes: (rng) => Array.from({ length: CHROMOSOME_LENGTH }, () => (rng() < 0.5 ? 0 : 1)),
   fitnessOf: knapsackFitness,
