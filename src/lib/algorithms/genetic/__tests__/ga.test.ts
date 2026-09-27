@@ -74,7 +74,8 @@ describe('knapsack problem', () => {
   it('is not merely the count of 1-genes — fitness depends on which items are chosen', () => {
     const genes = KNAPSACK_ITEMS.map((_, i) => (i === 0 ? 1 : 0))
     const sameCount = KNAPSACK_ITEMS.map((_, i) => (i === 1 ? 1 : 0))
-    expect(knapsackFitness(genes)).not.toBe(genes.reduce((s, g) => s + g, 0))
+    const geneSum = genes.reduce<number>((s, g) => s + g, 0)
+    expect(knapsackFitness(genes)).not.toBe(geneSum)
     expect(knapsackFitness(genes)).not.toBe(knapsackFitness(sameCount))
   })
 })
