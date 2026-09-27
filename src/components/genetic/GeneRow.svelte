@@ -16,6 +16,9 @@
     mutatedIndices?: number[]
     ring?: 'parent' | 'best' | 'candidate' | null
     badgeVariant?: BadgeVariant
+    selected?: boolean
+    /** Clicking the row inspects this chromosome elsewhere (e.g. the illustration). Omit to make the row non-interactive. */
+    onSelect?: () => void
   }
 
   let {
@@ -28,17 +31,24 @@
     mutatedIndices = [],
     ring = null,
     badgeVariant = 'secondary',
+    selected = false,
+    onSelect,
   }: Props = $props()
 
   const mutatedSet = $derived(new Set(mutatedIndices))
 </script>
 
-<div
+<button
+  type="button"
+  disabled={!onSelect}
+  onclick={onSelect}
   class={cn(
-    'flex items-center gap-2 rounded-md border border-transparent p-1',
+    'flex w-full items-center gap-2 rounded-md border border-transparent bg-transparent p-1 text-left',
+    onSelect && 'cursor-pointer hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     ring === 'parent' && 'ring-2 ring-node-current',
     ring === 'best' && 'ring-2 ring-node-path',
     ring === 'candidate' && 'border-dashed border-muted-foreground/50',
+    selected && 'bg-accent ring-2 ring-primary',
   )}
 >
   <Badge variant={badgeVariant} class="w-9 shrink-0 justify-center font-mono">{id}</Badge>
@@ -66,4 +76,4 @@
       ?
     {/if}
   </span>
-</div>
+</button>
