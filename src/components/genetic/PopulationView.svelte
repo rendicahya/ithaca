@@ -91,7 +91,6 @@
               fitness={c.fitness}
               evaluated={c.evaluated}
               {binary}
-              maxFitness={state.maxFitness}
               ring={ringFor(c.id)}
               badgeVariant={isCandidate(c.id) && !ringFor(c.id) ? 'outline' : 'secondary'}
             />
@@ -113,7 +112,6 @@
                 fitness={c.fitness}
                 evaluated={c.evaluated}
                 {binary}
-                maxFitness={state.maxFitness}
               />
             {/each}
           </div>
@@ -137,7 +135,6 @@
               fitness={state.parentA.fitness}
               evaluated={state.parentA.evaluated}
               {binary}
-              maxFitness={state.maxFitness}
               badgeVariant="outline"
             />
           {/if}
@@ -148,7 +145,6 @@
               fitness={state.parentB.fitness}
               evaluated={state.parentB.evaluated}
               {binary}
-              maxFitness={state.maxFitness}
               badgeVariant="outline"
             />
           {/if}
@@ -159,7 +155,6 @@
             fitness={state.offspring[0].fitness}
             evaluated={state.offspring[0].evaluated}
             {binary}
-            maxFitness={state.maxFitness}
             originClass={originA}
             mutatedIndices={state.mutatedIndices[0]}
           />
@@ -169,7 +164,6 @@
             fitness={state.offspring[1].fitness}
             evaluated={state.offspring[1].evaluated}
             {binary}
-            maxFitness={state.maxFitness}
             originClass={originB}
             mutatedIndices={state.mutatedIndices[1]}
           />
@@ -198,7 +192,6 @@
             fitness={state.bestChromosome.fitness}
             evaluated={state.bestChromosome.evaluated}
             {binary}
-            maxFitness={state.maxFitness}
             ring="best"
           />
         {/if}

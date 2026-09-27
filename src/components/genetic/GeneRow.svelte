@@ -7,7 +7,6 @@
     id: string
     genes: number[]
     fitness: number
-    maxFitness: number
     /** False while the chromosome has not gone through an "evaluate fitness" step — the fitness value is hidden rather than shown prematurely. */
     evaluated?: boolean
     /** Binary chromosomes highlight 1-genes; non-binary encodings (e.g. permutations) just show the raw value. */
@@ -23,7 +22,6 @@
     id,
     genes,
     fitness,
-    maxFitness,
     evaluated = true,
     binary = true,
     originClass,
@@ -63,9 +61,9 @@
   </div>
   <span class="ml-auto shrink-0 font-mono text-xs text-muted-foreground">
     {#if evaluated}
-      {fitness}/{maxFitness}
+      {fitness}
     {:else}
-      ?/{maxFitness}
+      ?
     {/if}
   </span>
 </div>

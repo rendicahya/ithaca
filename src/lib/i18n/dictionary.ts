@@ -279,6 +279,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.knapsack.weight': 'Weight',
     'genetic.knapsack.value': 'Value',
     'genetic.knapsack.capacity': 'Capacity',
+    'genetic.knapsack.capacityBarHint': 'the bar shows weight relative to the {capacity} kg capacity',
     'genetic.knapsack.packed': 'Packed',
     'genetic.knapsack.none': 'none — empty knapsack',
 
@@ -786,6 +787,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.knapsack.weight': 'Berat',
     'genetic.knapsack.value': 'Nilai',
     'genetic.knapsack.capacity': 'Kapasitas',
+    'genetic.knapsack.capacityBarHint': 'batang menunjukkan berat relatif terhadap kapasitas {capacity} kg',
     'genetic.knapsack.packed': 'Dimasukkan',
     'genetic.knapsack.none': 'tidak ada — ransel kosong',
 

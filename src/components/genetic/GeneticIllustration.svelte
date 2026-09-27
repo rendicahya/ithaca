@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Gem, Weight } from '@lucide/svelte'
+
   import { Badge } from '@/components/ui/badge'
   import {
     KNAPSACK_CAPACITY,
@@ -26,13 +28,41 @@
     <p class="mb-2 text-muted-foreground">
       {localeStore.t(msg('genetic.example.knapsack.description', { capacity: KNAPSACK_CAPACITY }))}
     </p>
-    <div class="flex flex-wrap gap-1.5">
+    <div class="flex flex-wrap gap-2">
       {#each KNAPSACK_ITEMS as item, i (i)}
-        <Badge variant="outline" class="font-mono">
-          {localeStore.t(msg('genetic.knapsack.item', { n: i + 1 }))}: {item.weight}/{item.value}
-        </Badge>
+        <div class="flex w-[4.5rem] flex-col gap-1 rounded-md border border-border bg-background p-1.5">
+          <span class="text-center text-[10px] font-semibold text-muted-foreground">
+            {localeStore.t(msg('genetic.knapsack.item', { n: i + 1 }))}
+          </span>
+          <div class="flex items-center justify-between font-mono text-[11px]">
+            <span
+              class="flex items-center gap-0.5 text-muted-foreground"
+              title={localeStore.t('genetic.knapsack.weight')}
+            >
+              <Weight class="size-3" />{item.weight}
+            </span>
+            <span
+              class="flex items-center gap-0.5 text-node-path"
+              title={localeStore.t('genetic.knapsack.value')}
+            >
+              <Gem class="size-3" />{item.value}
+            </span>
+          </div>
+          <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted" title={localeStore.t('genetic.knapsack.weight')}>
+            <div
+              class="h-full rounded-full bg-primary"
+              style={`width: ${Math.min(100, (item.weight / KNAPSACK_CAPACITY) * 100)}%`}
+            ></div>
+          </div>
+        </div>
       {/each}
     </div>
+    <p class="mt-1.5 text-[10px] text-muted-foreground">
+      <span class="inline-flex items-center gap-0.5"><Weight class="size-3" /> {localeStore.t('genetic.knapsack.weight')}</span>
+      ·
+      <span class="inline-flex items-center gap-0.5 text-node-path"><Gem class="size-3" /> {localeStore.t('genetic.knapsack.value')}</span>
+      · {localeStore.t(msg('genetic.knapsack.capacityBarHint', { capacity: KNAPSACK_CAPACITY }))}
+    </p>
     {#if best?.evaluated}
       {@const decoded = knapsackDecode(best.genes)}
       <p class="mt-2 font-mono text-muted-foreground">
