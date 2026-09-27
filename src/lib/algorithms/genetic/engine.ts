@@ -4,9 +4,11 @@ import { createRng, randomInt } from '@/lib/random'
 import { cloneChromosome, cloneState, genesToString } from './types'
 import type { Chromosome, GAProblemConfig, GAState, GAStep } from './types'
 
-// Shared across every GA example — the operations (tournament-select, crossover,
-// mutate) are named abstractly on purpose so the same pseudocode explains both
-// a binary-chromosome problem and a permutation-chromosome one.
+// Shared across every GA example — the operations (select, crossover, mutate)
+// are named abstractly on purpose so the same pseudocode explains both a
+// binary-chromosome problem and a permutation-chromosome one. The selection
+// mechanism itself (roulette wheel, tournament, ...) is covered separately,
+// on the Selection Methods page.
 export const geneticPseudocode = [
   'initialize population P randomly',
   'evaluate fitness of each individual in P',
@@ -15,7 +17,7 @@ export const geneticPseudocode = [
   'while generation < maxGenerations',
   '    newPopulation ← empty',
   '    while newPopulation is not full',
-  '        parentA, parentB ← tournament-select(P)',
+  '        parentA, parentB ← select(P)',
   '        with probability crossoverRate: offspringA, offspringB ← crossover(parentA, parentB)',
   '        with probability mutationRate: mutate(offspringA); mutate(offspringB)',
   '        add offspringA, offspringB to newPopulation',

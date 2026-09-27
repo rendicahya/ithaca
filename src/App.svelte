@@ -9,6 +9,8 @@
   import type { Topic } from '@/components/layout/Sidebar.svelte'
   import GeneticStatePanel from '@/components/genetic/GeneticStatePanel.svelte'
   import PopulationView from '@/components/genetic/PopulationView.svelte'
+  import SelectionStatePanel from '@/components/selection/SelectionStatePanel.svelte'
+  import SelectionView from '@/components/selection/SelectionView.svelte'
   import ACOGraphView from '@/components/aco/ACOGraphView.svelte'
   import ACOStatePanel from '@/components/aco/ACOStatePanel.svelte'
   import ParticleSwarmView from '@/components/pso/ParticleSwarmView.svelte'
@@ -40,6 +42,8 @@
   import type { SearchAlgorithm, SearchStep } from '@/lib/algorithms/search/types'
   import { gaExamples, geneticPseudocode, runGeneticAlgorithm } from '@/lib/algorithms/genetic'
   import type { GAExampleId, GAStep } from '@/lib/algorithms/genetic'
+  import { runSelectionDemo, selectionPseudocode } from '@/lib/algorithms/selection'
+  import type { SelectionStep } from '@/lib/algorithms/selection'
   import { acoPseudocode, runACO } from '@/lib/algorithms/aco'
   import type { ACOStep } from '@/lib/algorithms/aco'
   import { psoPseudocode, runPSO } from '@/lib/algorithms/pso'
@@ -132,6 +136,13 @@
     geneticController.load(runGeneticAlgorithm(selectedGAExampleId))
   })
 
+  // --- Selection Methods ---
+  const selectionController = new ExecutionController<SelectionStep>()
+
+  $effect(() => {
+    selectionController.load(runSelectionDemo())
+  })
+
   // --- Particle Swarm Optimization ---
   const psoController = new ExecutionController<PSOStep>()
 
@@ -196,6 +207,8 @@
         return prologController
       case 'genetic':
         return geneticController
+      case 'selection':
+        return selectionController
       case 'pso':
         return psoController
       case 'aco':
@@ -235,6 +248,8 @@
         return prologPseudocode
       case 'genetic':
         return geneticPseudocode
+      case 'selection':
+        return selectionPseudocode
       case 'pso':
         return psoPseudocode
       case 'aco':
@@ -262,6 +277,8 @@
         return localeStore.t('topics.prolog')
       case 'genetic':
         return localeStore.t('topics.genetic')
+      case 'selection':
+        return localeStore.t('topics.selection')
       case 'pso':
         return localeStore.t('topics.pso')
       case 'aco':
@@ -368,6 +385,10 @@
       {#if geneticController.current}
         <PopulationView state={geneticController.current.state} />
       {/if}
+    {:else if selectedTopic === 'selection'}
+      {#if selectionController.current}
+        <SelectionView state={selectionController.current.state} />
+      {/if}
     {:else if selectedTopic === 'pso'}
       {#if psoController.current}
         <ParticleSwarmView state={psoController.current.state} />
@@ -421,6 +442,10 @@
         {:else if selectedTopic === 'genetic'}
           {#if geneticController.current}
             <GeneticStatePanel state={geneticController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'selection'}
+          {#if selectionController.current}
+            <SelectionStatePanel state={selectionController.current.state} />
           {/if}
         {:else if selectedTopic === 'pso'}
           {#if psoController.current}

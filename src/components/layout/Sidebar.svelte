@@ -10,6 +10,7 @@
     | 'search'
     | 'prolog'
     | 'genetic'
+    | 'selection'
     | 'pso'
     | 'aco'
     | 'knn'
@@ -55,6 +56,7 @@
     { id: 'search', labelKey: 'sidebar.searchAlgorithms' },
     { id: 'prolog', labelKey: 'topics.prolog' },
     { id: 'genetic', labelKey: 'topics.genetic' },
+    { id: 'selection', labelKey: 'topics.selection' },
     { id: 'pso', labelKey: 'topics.pso' },
     { id: 'aco', labelKey: 'topics.aco' },
     { id: 'knn', labelKey: 'topics.knn' },
