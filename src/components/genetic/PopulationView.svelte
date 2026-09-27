@@ -8,6 +8,7 @@
   import { ZoomState } from '@/lib/zoom.svelte'
 
   import GeneRow from './GeneRow.svelte'
+  import GeneticIllustration from './GeneticIllustration.svelte'
 
   interface Props {
     state: GAState
@@ -16,6 +17,7 @@
   let { state }: Props = $props()
 
   const zoom = new ZoomState()
+  const binary = $derived(state.exampleId === 'knapsack')
 
   function ringFor(id: string): 'parent' | 'best' | null {
     if (state.parentA?.id === id || state.parentB?.id === id) return 'parent'
@@ -30,12 +32,19 @@
     )
   }
 
-  const point = $derived(state.crossoverPoint)
-  const originA = $derived(
-    (i: number) => (point !== null && i < point ? 'border-t-node-start' : 'border-t-node-goal'),
+  // Single-point crossover splits at one index; order crossover copies a
+  // contiguous segment — both reduce to "is gene i inside the copied range".
+  const inCopiedRange = $derived((i: number) => {
+    const [p0, p1] = state.crossoverPoints
+    if (state.crossoverKind === 'point') return i < p0
+    if (state.crossoverKind === 'segment') return i >= p0 && i < p1
+    return false
+  })
+  const originA = $derived((i: number) =>
+    inCopiedRange(i) ? 'border-t-node-start' : 'border-t-node-goal',
   )
-  const originB = $derived(
-    (i: number) => (point !== null && i < point ? 'border-t-node-goal' : 'border-t-node-start'),
+  const originB = $derived((i: number) =>
+    inCopiedRange(i) ? 'border-t-node-goal' : 'border-t-node-start',
   )
 </script>
 
@@ -52,6 +61,8 @@
     class="flex h-full flex-col gap-4 overflow-y-auto p-4 scrollbar-thin"
     style={`zoom: ${zoom.level}`}
   >
+    <GeneticIllustration {state} />
+
     <div class="flex flex-wrap items-center gap-2">
       <Badge variant="default" class="font-mono">
         {localeStore.t('genetic.generation')}: {state.generation} / {state.maxGenerations}
@@ -60,27 +71,60 @@
         {localeStore.t('genetic.target')}: {state.targetFitness}
       </Badge>
       <Badge variant="muted" class="font-mono">
-        {localeStore.t('genetic.bestEver')}: {state.bestFitnessEver}
+        {localeStore.t('genetic.bestEver')}: {state.bestChromosome ? state.bestFitnessEver : '—'}
+      </Badge>
+      <Badge variant="outline" class="font-mono">
+        {localeStore.t('genetic.crossoverRate')}: {state.crossoverRate}
+      </Badge>
+      <Badge variant="outline" class="font-mono">
+        {localeStore.t('genetic.mutationRate')}: {state.mutationRate}
       </Badge>
     </div>
 
-    <section>
-      <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {localeStore.t('genetic.population')}
-      </h3>
-      <div class="flex flex-col gap-1.5">
-        {#each state.population as c (c.id)}
-          <GeneRow
-            id={c.id}
-            genes={c.genes}
-            fitness={c.fitness}
-            maxFitness={state.chromosomeLength}
-            ring={ringFor(c.id)}
-            badgeVariant={isCandidate(c.id) && !ringFor(c.id) ? 'outline' : 'secondary'}
-          />
-        {/each}
-      </div>
-    </section>
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <section>
+        <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {localeStore.t('genetic.population')}
+        </h3>
+        <div class="flex flex-col gap-1.5">
+          {#each state.population as c (c.id)}
+            <GeneRow
+              id={c.id}
+              genes={c.genes}
+              fitness={c.fitness}
+              evaluated={c.evaluated}
+              {binary}
+              maxFitness={state.maxFitness}
+              ring={ringFor(c.id)}
+              badgeVariant={isCandidate(c.id) && !ringFor(c.id) ? 'outline' : 'secondary'}
+            />
+          {/each}
+        </div>
+      </section>
+
+      <section>
+        <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {localeStore.t('genetic.newPopulation')} ({state.newPopulation.length}/{state.population
+            .length})
+        </h3>
+        {#if state.newPopulation.length > 0}
+          <div class="flex flex-col gap-1.5">
+            {#each state.newPopulation as c (c.id)}
+              <GeneRow
+                id={c.id}
+                genes={c.genes}
+                fitness={c.fitness}
+                evaluated={c.evaluated}
+                {binary}
+                maxFitness={state.maxFitness}
+              />
+            {/each}
+          </div>
+        {:else}
+          <p class="text-xs text-muted-foreground">{localeStore.t('common.noneYet')}</p>
+        {/if}
+      </section>
+    </div>
 
     {#if state.offspring}
       <Separator />
@@ -94,7 +138,9 @@
               id={state.parentA.id}
               genes={state.parentA.genes}
               fitness={state.parentA.fitness}
-              maxFitness={state.chromosomeLength}
+              evaluated={state.parentA.evaluated}
+              {binary}
+              maxFitness={state.maxFitness}
               badgeVariant="outline"
             />
           {/if}
@@ -103,7 +149,9 @@
               id={state.parentB.id}
               genes={state.parentB.genes}
               fitness={state.parentB.fitness}
-              maxFitness={state.chromosomeLength}
+              evaluated={state.parentB.evaluated}
+              {binary}
+              maxFitness={state.maxFitness}
               badgeVariant="outline"
             />
           {/if}
@@ -112,7 +160,9 @@
             id={state.offspring[0].id}
             genes={state.offspring[0].genes}
             fitness={state.offspring[0].fitness}
-            maxFitness={state.chromosomeLength}
+            evaluated={state.offspring[0].evaluated}
+            {binary}
+            maxFitness={state.maxFitness}
             originClass={originA}
             mutatedIndices={state.mutatedIndices[0]}
           />
@@ -120,29 +170,18 @@
             id={state.offspring[1].id}
             genes={state.offspring[1].genes}
             fitness={state.offspring[1].fitness}
-            maxFitness={state.chromosomeLength}
+            evaluated={state.offspring[1].evaluated}
+            {binary}
+            maxFitness={state.maxFitness}
             originClass={originB}
             mutatedIndices={state.mutatedIndices[1]}
           />
         </div>
         <p class="mt-1.5 text-xs text-muted-foreground">
-          {localeStore.t('genetic.crossoverPoint')}: {state.crossoverPoint ?? '—'}
+          {localeStore.t('genetic.crossoverPoint')}: {state.crossoverPoints.length > 0
+            ? state.crossoverPoints.join('–')
+            : '—'}
         </p>
-      </section>
-    {/if}
-
-    {#if state.newPopulation.length > 0}
-      <Separator />
-      <section>
-        <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          {localeStore.t('genetic.newPopulation')} ({state.newPopulation.length}/{state.population
-            .length})
-        </h3>
-        <div class="flex flex-col gap-1.5">
-          {#each state.newPopulation as c (c.id)}
-            <GeneRow id={c.id} genes={c.genes} fitness={c.fitness} maxFitness={state.chromosomeLength} />
-          {/each}
-        </div>
       </section>
     {/if}
 
@@ -162,7 +201,9 @@
             id={state.bestChromosome.id}
             genes={state.bestChromosome.genes}
             fitness={state.bestChromosome.fitness}
-            maxFitness={state.chromosomeLength}
+            evaluated={state.bestChromosome.evaluated}
+            {binary}
+            maxFitness={state.maxFitness}
             ring="best"
           />
         {/if}

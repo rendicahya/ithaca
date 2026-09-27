@@ -38,8 +38,8 @@
   import GraphView from '@/components/visualization/GraphView.svelte'
   import { getAlgorithm, searchAlgorithms } from '@/lib/algorithms/search'
   import type { SearchAlgorithm, SearchStep } from '@/lib/algorithms/search/types'
-  import { geneticPseudocode, runGeneticAlgorithm } from '@/lib/algorithms/genetic'
-  import type { GAStep } from '@/lib/algorithms/genetic'
+  import { gaExamples, geneticPseudocode, runGeneticAlgorithm } from '@/lib/algorithms/genetic'
+  import type { GAExampleId, GAStep } from '@/lib/algorithms/genetic'
   import { acoPseudocode, runACO } from '@/lib/algorithms/aco'
   import type { ACOStep } from '@/lib/algorithms/aco'
   import { psoPseudocode, runPSO } from '@/lib/algorithms/pso'
@@ -125,10 +125,11 @@
   })
 
   // --- Genetic Algorithm ---
+  let selectedGAExampleId = $state<GAExampleId>('knapsack')
   const geneticController = new ExecutionController<GAStep>()
 
   $effect(() => {
-    geneticController.load(runGeneticAlgorithm())
+    geneticController.load(runGeneticAlgorithm(selectedGAExampleId))
   })
 
   // --- Particle Swarm Optimization ---
@@ -315,6 +316,9 @@
       onSelectGraph={(id) => (selectedGraphId = id)}
       {graph}
       onSelectGoal={selectGoal}
+      {gaExamples}
+      selectedGAExampleId={selectedGAExampleId}
+      onSelectGAExample={(id) => (selectedGAExampleId = id)}
     />
   {/snippet}
 

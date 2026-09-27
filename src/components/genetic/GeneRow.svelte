@@ -8,6 +8,10 @@
     genes: number[]
     fitness: number
     maxFitness: number
+    /** False while the chromosome has not gone through an "evaluate fitness" step — the fitness value is hidden rather than shown prematurely. */
+    evaluated?: boolean
+    /** Binary chromosomes highlight 1-genes; non-binary encodings (e.g. permutations) just show the raw value. */
+    binary?: boolean
     /** Per-gene index → which parent it came from, for crossover offspring rows. */
     originClass?: (index: number) => string
     mutatedIndices?: number[]
@@ -20,6 +24,8 @@
     genes,
     fitness,
     maxFitness,
+    evaluated = true,
+    binary = true,
     originClass,
     mutatedIndices = [],
     ring = null,
@@ -45,7 +51,7 @@
           'flex size-6 items-center justify-center rounded border font-mono text-xs font-semibold',
           originClass
             ? cn('border-t-4', originClass(i))
-            : gene === 1
+            : binary && gene === 1
               ? 'border-border bg-primary text-primary-foreground'
               : 'border-border bg-muted text-muted-foreground',
           mutatedSet.has(i) && 'ring-2 ring-destructive',
@@ -55,5 +61,11 @@
       </div>
     {/each}
   </div>
-  <span class="ml-auto shrink-0 font-mono text-xs text-muted-foreground">{fitness}/{maxFitness}</span>
+  <span class="ml-auto shrink-0 font-mono text-xs text-muted-foreground">
+    {#if evaluated}
+      {fitness}/{maxFitness}
+    {:else}
+      ?/{maxFitness}
+    {/if}
+  </span>
 </div>

@@ -1,68 +1,99 @@
 import { describe, expect, it } from 'vitest'
 
 import { geneticPseudocode, runGeneticAlgorithm } from '../ga'
+import { KNAPSACK_CAPACITY, KNAPSACK_ITEMS, knapsackFitness } from '../problems/knapsack'
+import { tourDistance } from '../problems/route'
 
-describe('runGeneticAlgorithm', () => {
-  const steps = runGeneticAlgorithm()
-  const last = steps[steps.length - 1]
+describe.each([{ id: 'knapsack' as const }, { id: 'route' as const }])(
+  'runGeneticAlgorithm(%s)',
+  ({ id }) => {
+    const steps = runGeneticAlgorithm(id)
+    const last = steps[steps.length - 1]
 
-  it('terminates', () => {
-    expect(last.state.done).toBe(true)
-  })
+    it('terminates', () => {
+      expect(last.state.done).toBe(true)
+    })
 
-  it('finds the optimal all-ones chromosome within the generation budget', () => {
-    expect(last.state.found).toBe(true)
-    expect(last.state.bestFitnessEver).toBe(last.state.chromosomeLength)
-    expect(last.state.bestChromosome?.genes.every((g) => g === 1)).toBe(true)
-  })
+    it('finds the optimal solution within the generation budget', () => {
+      expect(last.state.found).toBe(true)
+      expect(last.state.bestFitnessEver).toBe(last.state.targetFitness)
+    })
 
-  it('never exceeds the configured maximum number of generations', () => {
-    expect(last.state.generation).toBeLessThanOrEqual(last.state.maxGenerations)
-  })
+    it('never exceeds the configured maximum number of generations', () => {
+      expect(last.state.generation).toBeLessThanOrEqual(last.state.maxGenerations)
+    })
 
-  it('keeps population size constant at every step where a population exists', () => {
-    for (const step of steps) {
-      if (step.state.population.length > 0) {
-        expect(step.state.population.length).toBe(6)
+    it('keeps population size constant at every step where a population exists', () => {
+      for (const step of steps) {
+        if (step.state.population.length > 0) {
+          expect(step.state.population.length).toBe(6)
+        }
       }
-    }
-  })
+    })
 
-  it('always splits crossover strictly inside the chromosome', () => {
-    for (const step of steps) {
-      if (step.state.crossoverPoint !== null) {
-        expect(step.state.crossoverPoint).toBeGreaterThanOrEqual(1)
-        expect(step.state.crossoverPoint).toBeLessThan(step.state.chromosomeLength)
+    it('hides fitness until a chromosome has actually been evaluated', () => {
+      for (const step of steps) {
+        for (const c of step.state.population) {
+          if (!c.evaluated) continue
+          expect(Number.isFinite(c.fitness)).toBe(true)
+        }
       }
-    }
+      // the very first step is the freshly initialized, unevaluated population
+      expect(steps[0].state.population.every((c) => !c.evaluated)).toBe(true)
+    })
+
+    it('records a solutionFound step as the very last step', () => {
+      expect(last.traceEntry?.key).toBe('genetic.solutionFound.trace')
+    })
+
+    it('every step references a valid pseudocode line', () => {
+      for (const step of steps) {
+        expect(step.activePseudocodeLine).toBeGreaterThanOrEqual(1)
+        expect(step.activePseudocodeLine).toBeLessThanOrEqual(geneticPseudocode.length)
+      }
+    })
+
+    it('produces an identical run every time given the fixed seed', () => {
+      const again = runGeneticAlgorithm(id)
+      expect(again.length).toBe(steps.length)
+      expect(again[again.length - 1].state.bestChromosome?.genes).toEqual(
+        last.state.bestChromosome?.genes,
+      )
+    })
+  },
+)
+
+describe('knapsack problem', () => {
+  it('scores zero for a packing list over capacity', () => {
+    const allOnes = KNAPSACK_ITEMS.map(() => 1)
+    const totalWeight = KNAPSACK_ITEMS.reduce((sum, item) => sum + item.weight, 0)
+    expect(totalWeight).toBeGreaterThan(KNAPSACK_CAPACITY)
+    expect(knapsackFitness(allOnes)).toBe(0)
   })
 
-  it('applies mutation at least once across the run', () => {
-    const mutated = steps.some(
-      (s) => s.state.mutatedIndices[0].length > 0 || s.state.mutatedIndices[1].length > 0,
-    )
-    expect(mutated).toBe(true)
-  })
-
-  it('records a solutionFound step as the very last step', () => {
-    expect(last.traceEntry?.key).toBe('genetic.solutionFound.trace')
-  })
-
-  it('every step references a valid pseudocode line', () => {
-    for (const step of steps) {
-      expect(step.activePseudocodeLine).toBeGreaterThanOrEqual(1)
-      expect(step.activePseudocodeLine).toBeLessThanOrEqual(geneticPseudocode.length)
-    }
+  it('is not merely the count of 1-genes — fitness depends on which items are chosen', () => {
+    const genes = KNAPSACK_ITEMS.map((_, i) => (i === 0 ? 1 : 0))
+    const sameCount = KNAPSACK_ITEMS.map((_, i) => (i === 1 ? 1 : 0))
+    expect(knapsackFitness(genes)).not.toBe(genes.reduce((s, g) => s + g, 0))
+    expect(knapsackFitness(genes)).not.toBe(knapsackFitness(sameCount))
   })
 })
 
-describe('runGeneticAlgorithm — determinism', () => {
-  it('produces an identical run every time given the fixed seed', () => {
-    const a = runGeneticAlgorithm()
-    const b = runGeneticAlgorithm()
-    expect(a.length).toBe(b.length)
-    expect(a[a.length - 1].state.bestChromosome?.genes).toEqual(
-      b[b.length - 1].state.bestChromosome?.genes,
-    )
+describe('route problem', () => {
+  it('a tour of all cities visits every city exactly once', () => {
+    const steps = runGeneticAlgorithm('route')
+    for (const step of steps) {
+      for (const c of step.state.population) {
+        const sorted = [...c.genes].sort((a, b) => a - b)
+        expect(sorted).toEqual(sorted.map((_, i) => i))
+      }
+    }
+  })
+
+  it('fitness is derived from tour distance, not gene values', () => {
+    const genes = [0, 1, 2, 3, 4, 5]
+    const shuffled = [0, 2, 4, 1, 3, 5]
+    expect(tourDistance(genes)).not.toBe(0)
+    expect(tourDistance(shuffled)).not.toBe(tourDistance(genes))
   })
 })

@@ -42,9 +42,20 @@
 
   <section>
     <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+      {localeStore.t('genetic.crossoverRate')} / {localeStore.t('genetic.mutationRate')}
+    </h3>
+    <span class="font-mono text-sm">{state.crossoverRate} / {state.mutationRate}</span>
+  </section>
+
+  <Separator />
+
+  <section>
+    <h3 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
       {localeStore.t('genetic.crossoverPoint')}
     </h3>
-    <span class="font-mono text-sm">{state.crossoverPoint ?? '—'}</span>
+    <span class="font-mono text-sm">
+      {state.crossoverPoints.length > 0 ? state.crossoverPoints.join('–') : '—'}
+    </span>
   </section>
 
   <Separator />

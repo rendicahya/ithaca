@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { GAExample, GAExampleId } from '@/lib/algorithms/genetic'
   import type { SearchAlgorithm } from '@/lib/algorithms/search/types'
   import type { GraphExample } from '@/lib/graph/examples'
   import type { Graph, NodeId } from '@/lib/graph/types'
@@ -29,6 +30,9 @@
     onSelectGraph: (id: GraphExample['id']) => void
     graph: Graph
     onSelectGoal: (id: NodeId) => void
+    gaExamples: GAExample[]
+    selectedGAExampleId: GAExampleId
+    onSelectGAExample: (id: GAExampleId) => void
   }
 
   let {
@@ -42,6 +46,9 @@
     onSelectGraph,
     graph,
     onSelectGoal,
+    gaExamples,
+    selectedGAExampleId,
+    onSelectGAExample,
   }: Props = $props()
 
   const topicButtons: { id: Topic; labelKey: string }[] = [
@@ -86,6 +93,33 @@
       {/each}
     </ul>
   </div>
+
+  {#if selectedTopic === 'genetic'}
+    <div>
+      <h2 class="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {localeStore.t('sidebar.gaExample')}
+      </h2>
+      <ul class="space-y-0.5">
+        {#each gaExamples as example (example.id)}
+          <li>
+            <button
+              type="button"
+              class={cn(
+                'w-full rounded-md px-2.5 py-2 text-left text-sm transition-colors',
+                selectedGAExampleId === example.id
+                  ? 'bg-secondary font-medium text-secondary-foreground'
+                  : 'text-foreground hover:bg-accent hover:text-accent-foreground',
+              )}
+              aria-current={selectedGAExampleId === example.id ? 'page' : undefined}
+              onclick={() => onSelectGAExample(example.id)}
+            >
+              {localeStore.t(example.nameKey)}
+            </button>
+          </li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
 
   {#if selectedTopic === 'search'}
     <div>
