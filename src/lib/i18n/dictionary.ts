@@ -283,6 +283,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.knapsack.none': 'none — empty knapsack',
 
     'genetic.route.city': 'City {n}',
+    'genetic.route.currentGenBest': 'Best of Generation {gen}',
     'genetic.route.order': 'Visiting order',
     'genetic.route.distance': 'Total distance',
 
@@ -790,6 +791,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.knapsack.none': 'tidak ada — ransel kosong',
 
     'genetic.route.city': 'Kota {n}',
+    'genetic.route.currentGenBest': 'Terbaik Generasi {gen}',
     'genetic.route.order': 'Urutan kunjungan',
     'genetic.route.distance': 'Total jarak',
 

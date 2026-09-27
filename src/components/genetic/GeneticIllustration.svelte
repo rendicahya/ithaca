@@ -21,6 +21,14 @@
   let { state }: Props = $props()
 
   const best = $derived(state.bestChromosome)
+
+  // Distinct from `best` (best across all generations): this always tracks
+  // a chromosome that is actually in state.population, so the route
+  // illustration never shows a tour that has vanished from the screen.
+  const currentGenBest = $derived.by(() => {
+    if (state.population.length === 0 || !state.population.every((c) => c.evaluated)) return null
+    return state.population.reduce((a, b) => (b.fitness > a.fitness ? b : a))
+  })
 </script>
 
 <div class="rounded-md border border-border bg-card p-3 text-xs">
@@ -83,59 +91,64 @@
         }),
       )}
     </p>
-    <div class="flex flex-wrap gap-1.5">
-      {#each ROUTE_CITIES as city, i (i)}
-        <Badge variant="outline" class="font-mono">
-          {localeStore.t(msg('genetic.route.city', { n: i + 1 }))} ({city.x}, {city.y})
-        </Badge>
-      {/each}
-    </div>
-
     {@const minX = Math.min(...ROUTE_CITIES.map((c) => c.x))}
     {@const maxX = Math.max(...ROUTE_CITIES.map((c) => c.x))}
     {@const minY = Math.min(...ROUTE_CITIES.map((c) => -c.y))}
     {@const maxY = Math.max(...ROUTE_CITIES.map((c) => -c.y))}
     {@const pad = 1.5}
     {@const viewBox = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`}
-    {@const order = best?.evaluated ? routeDecode(best.genes).order : null}
-    <svg {viewBox} class="mt-2 h-40 w-full rounded border border-border bg-background">
-      {#if order}
-        {#each order as cityIndex, k (k)}
-          {@const from = ROUTE_CITIES[cityIndex]}
-          {@const to = ROUTE_CITIES[order[(k + 1) % order.length]]}
-          <line
-            x1={from.x}
-            y1={-from.y}
-            x2={to.x}
-            y2={-to.y}
-            stroke="var(--color-primary)"
-            stroke-width="0.15"
-          />
+    {@const order = currentGenBest ? routeDecode(currentGenBest.genes).order : null}
+    <div class="rounded border border-border bg-background p-2">
+      <div class="flex flex-wrap gap-1.5">
+        {#each ROUTE_CITIES as city, i (i)}
+          <Badge variant="outline" class="font-mono text-[10px]">
+            {localeStore.t(msg('genetic.route.city', { n: i + 1 }))} ({city.x}, {city.y})
+          </Badge>
         {/each}
-      {/if}
-      {#each ROUTE_CITIES as city, i (i)}
-        <circle cx={city.x} cy={-city.y} r="0.35" class="fill-foreground" />
-        <text
-          x={city.x}
-          y={-city.y - 0.6}
-          font-size="0.6"
-          text-anchor="middle"
-          class="fill-foreground font-mono"
-        >
-          {i + 1}
-        </text>
-      {/each}
-    </svg>
+      </div>
+      <svg {viewBox} class="mt-2 h-40 w-full rounded bg-card">
+        {#if order}
+          {#each order as cityIndex, k (k)}
+            {@const from = ROUTE_CITIES[cityIndex]}
+            {@const to = ROUTE_CITIES[order[(k + 1) % order.length]]}
+            <line
+              x1={from.x}
+              y1={-from.y}
+              x2={to.x}
+              y2={-to.y}
+              stroke="var(--color-primary)"
+              stroke-width="0.15"
+            />
+          {/each}
+        {/if}
+        {#each ROUTE_CITIES as city, i (i)}
+          <circle cx={city.x} cy={-city.y} r="0.35" class="fill-foreground" />
+          <text
+            x={city.x}
+            y={-city.y - 0.6}
+            font-size="0.6"
+            text-anchor="middle"
+            class="fill-foreground font-mono"
+          >
+            {i + 1}
+          </text>
+        {/each}
+      </svg>
 
-    {#if best?.evaluated}
-      {@const decoded = routeDecode(best.genes)}
-      <p class="mt-2 font-mono text-muted-foreground">
-        <span class="font-semibold text-node-path">{localeStore.t('genetic.bestEver')}</span> —
-        {localeStore.t('genetic.route.order')}: {decoded.order.map((i) => `#${i + 1}`).join(' → ')} → #{decoded
-          .order[0] + 1}
-        · {localeStore.t('genetic.route.distance')}: {decoded.distance.toFixed(1)}
-      </p>
-    {/if}
+      {#if currentGenBest}
+        {@const decoded = routeDecode(currentGenBest.genes)}
+        <p class="mt-2 font-mono text-muted-foreground">
+          <span class="font-semibold text-node-path">
+            {localeStore.t(msg('genetic.route.currentGenBest', { gen: state.generation }))}
+          </span>
+          —
+          {localeStore.t('genetic.route.order')}: {decoded.order.map((i) => `#${i + 1}`).join(' → ')} → #{decoded
+            .order[0] + 1}
+          · {localeStore.t('genetic.route.distance')}: {decoded.distance.toFixed(1)}
+          · {localeStore.t('genetic.fitness')}: {currentGenBest.fitness}
+        </p>
+      {/if}
+    </div>
     <p class="mt-2 text-muted-foreground">
       {localeStore.t(msg('genetic.route.fitnessExplanation', { scale: ROUTE_FITNESS_SCALE }))}
     </p>
