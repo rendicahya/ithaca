@@ -260,7 +260,6 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.bestEver': 'Best So Far',
     'genetic.fitness': 'Fitness',
     'genetic.selectedChromosome': 'Chromosome {id}',
-    'genetic.clickToInspect': 'Click a chromosome below to see it here.',
     'genetic.parents': 'Selected Parents',
     'genetic.crossoverPoint': 'Crossover Point',
     'genetic.crossoverRate': 'Crossover Rate',
@@ -283,6 +282,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.knapsack.capacity': 'Capacity',
     'genetic.knapsack.packed': 'Packed',
     'genetic.knapsack.none': 'none — empty knapsack',
+    'genetic.knapsack.overCapacity': 'over capacity — fitness is 0',
 
     'genetic.route.city': 'City {n}',
     'genetic.route.currentGenBest': 'Best of Generation {gen}',
@@ -770,7 +770,6 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.bestEver': 'Terbaik Sejauh Ini',
     'genetic.fitness': 'Fitness',
     'genetic.selectedChromosome': 'Kromosom {id}',
-    'genetic.clickToInspect': 'Klik salah satu kromosom di bawah untuk melihatnya di sini.',
     'genetic.parents': 'Induk Terpilih',
     'genetic.crossoverPoint': 'Titik Crossover',
     'genetic.crossoverRate': 'Tingkat Crossover',
@@ -793,6 +792,7 @@ export const dictionary: Record<Locale, Record<string, string>> = {
     'genetic.knapsack.capacity': 'Kapasitas',
     'genetic.knapsack.packed': 'Dimasukkan',
     'genetic.knapsack.none': 'tidak ada — ransel kosong',
+    'genetic.knapsack.overCapacity': 'melebihi kapasitas — fitness menjadi 0',
 
     'genetic.route.city': 'Kota {n}',
     'genetic.route.currentGenBest': 'Terbaik Generasi {gen}',

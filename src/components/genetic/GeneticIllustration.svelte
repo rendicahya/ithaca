@@ -80,6 +80,7 @@
     </p>
     {#if selectedChromosome}
       {@const decoded = knapsackSelectedDecoded}
+      {@const overCapacity = (decoded?.weight ?? 0) > KNAPSACK_CAPACITY}
       <p class="mt-2 font-mono text-muted-foreground">
         <span class="font-semibold text-primary">
           {localeStore.t(msg('genetic.selectedChromosome', { id: selectedChromosome.id }))}
@@ -91,7 +92,13 @@
               .map((i) => localeStore.t(msg('genetic.knapsack.item', { n: i + 1 })))
               .join(', ')
           : localeStore.t('genetic.knapsack.none')}
-        ({decoded?.weight}/{KNAPSACK_CAPACITY} kg · {localeStore.t('genetic.knapsack.value')} {decoded?.value})
+        (<span class={overCapacity ? 'font-semibold text-destructive' : ''}
+          >{decoded?.weight}</span
+        >/{KNAPSACK_CAPACITY} kg · {localeStore.t('genetic.knapsack.value')} {decoded?.value} ·
+        {localeStore.t('genetic.fitness')} {selectedChromosome.fitness})
+        {#if overCapacity}
+          <span class="text-destructive">— {localeStore.t('genetic.knapsack.overCapacity')}</span>
+        {/if}
       </p>
     {:else if best?.evaluated}
       {@const decoded = knapsackDecode(best.genes)}
@@ -103,12 +110,10 @@
               .map((i) => localeStore.t(msg('genetic.knapsack.item', { n: i + 1 })))
               .join(', ')
           : localeStore.t('genetic.knapsack.none')}
-        ({decoded.weight}/{KNAPSACK_CAPACITY} kg · {localeStore.t('genetic.knapsack.value')} {decoded.value})
+        ({decoded.weight}/{KNAPSACK_CAPACITY} kg · {localeStore.t('genetic.knapsack.value')} {decoded.value}
+        · {localeStore.t('genetic.fitness')} {best.fitness})
       </p>
     {/if}
-    <p class="mt-1.5 text-[10px] text-muted-foreground">
-      {localeStore.t('genetic.clickToInspect')}
-    </p>
   {:else}
     <p class="mb-2 text-muted-foreground">
       {localeStore.t(msg('genetic.example.route.description', { count: ROUTE_CITIES.length }))}
@@ -182,9 +187,6 @@
           · {localeStore.t('genetic.fitness')}: {routeDisplayed.evaluated ? routeDisplayed.fitness : '?'}
         </p>
       {/if}
-      <p class="mt-1.5 text-[10px] text-muted-foreground">
-        {localeStore.t('genetic.clickToInspect')}
-      </p>
     </div>
     <p class="mt-2 text-muted-foreground">
       {localeStore.t(msg('genetic.route.fitnessExplanation', { scale: ROUTE_FITNESS_SCALE }))}
