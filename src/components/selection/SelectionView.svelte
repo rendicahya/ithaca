@@ -123,8 +123,8 @@
         {localeStore.t('selection.roulette')}
       </h3>
       {#if showRoulette}
-        <div class="relative mx-auto size-36">
-          <svg viewBox="0 0 100 100" class="size-36 rounded-full border border-border">
+        <div class="relative mx-auto size-64">
+          <svg viewBox="0 0 100 100" class="size-64 rounded-full border border-border">
             {#each wheelSlices as slice (slice.id)}
               <path d={slice.path} fill={slice.color} stroke="var(--color-card)" stroke-width="0.5" />
               {#if slice.wide}
@@ -144,11 +144,11 @@
           </svg>
           {#if sel.spinFraction !== null}
             <div
-              class="absolute left-1/2 top-1/2 h-0.5 w-16 origin-left rounded-full bg-foreground transition-transform ease-out"
+              class="absolute left-1/2 top-1/2 h-1 w-28 origin-left rounded-full bg-foreground transition-transform ease-out"
               style={`transition-duration: ${SPIN_DURATION_MS}ms; transform: translateY(-50%) rotate(${needleDeg - 90}deg)`}
             ></div>
             <div
-              class="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground"
+              class="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground"
             ></div>
           {/if}
         </div>
@@ -168,11 +168,11 @@
         {localeStore.t('selection.tournamentTitle')}
       </h3>
       {#if showTournament}
-        <div class="flex flex-wrap justify-center gap-2">
+        <div class="flex flex-wrap justify-center gap-3">
           {#each sel.population as p (p.id)}
             {#if sel.tournamentCandidateIds.includes(p.id)}
               <div
-                class={`flex size-14 flex-col items-center justify-center rounded-md border-2 font-mono text-xs ${
+                class={`flex size-24 flex-col items-center justify-center gap-1 rounded-md border-2 font-mono text-base ${
                   p.id === sel.tournamentWinnerId
                     ? 'border-primary bg-primary text-primary-foreground font-semibold'
                     : 'border-border bg-background text-foreground'
