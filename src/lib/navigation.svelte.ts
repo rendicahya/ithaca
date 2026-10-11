@@ -1,23 +1,7 @@
-import type { Topic } from '@/components/layout/Sidebar.svelte'
+import { isTopic } from '@/lib/topics'
+import type { Topic } from '@/lib/topics'
 
 const STORAGE_KEY = 'ithaca-last-topic'
-const VALID_TOPICS: Topic[] = [
-  'search',
-  'prolog',
-  'genetic',
-  'pso',
-  'aco',
-  'knn',
-  'naiveBayes',
-  'logreg',
-  'linreg',
-  'kmeans',
-  'qlearning',
-]
-
-function isTopic(value: string): value is Topic {
-  return (VALID_TOPICS as string[]).includes(value)
-}
 
 /** Remembers which topic the lecturer last had open, so reopening Ithaca resumes there. */
 class LastTopicStore {

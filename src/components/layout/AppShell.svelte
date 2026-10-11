@@ -24,7 +24,7 @@
     {@render header()}
   </header>
 
-  <div class="grid grid-cols-[220px_1fr_280px] overflow-hidden">
+  <div class="grid grid-cols-[220px_1fr_clamp(320px,26vw,400px)] overflow-hidden">
     <nav class="overflow-hidden border-r border-border">
       {@render nav()}
     </nav>

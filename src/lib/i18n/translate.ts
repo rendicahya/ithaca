@@ -8,10 +8,11 @@ export type Locale = 'en' | 'id'
  */
 export interface Message {
   key: string
-  params?: Record<string, string | number>
+  /** A nested Message param is translated too, e.g. a factor name inside an explanation. */
+  params?: Record<string, string | number | Message>
 }
 
-export function msg(key: string, params?: Record<string, string | number>): Message {
+export function msg(key: string, params?: Record<string, string | number | Message>): Message {
   return { key, params }
 }
 
@@ -22,7 +23,9 @@ export function t(locale: Locale, dictionary: Record<Locale, Record<string, stri
   const params = typeof message === 'string' ? undefined : message.params
   const template = dictionary[locale]?.[key] ?? dictionary.en[key] ?? key
   if (!params) return template
-  return template.replace(/\{(\w+)\}/g, (_, name: string) =>
-    name in params ? String(params[name]) : `{${name}}`,
-  )
+  return template.replace(/\{(\w+)\}/g, (_, name: string) => {
+    if (!(name in params)) return `{${name}}`
+    const value = params[name]
+    return typeof value === 'object' ? t(locale, dictionary, value) : String(value)
+  })
 }

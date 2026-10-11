@@ -6,7 +6,12 @@
   import { Button } from '@/components/ui/button'
   import Header from '@/components/layout/Header.svelte'
   import Sidebar from '@/components/layout/Sidebar.svelte'
-  import type { Topic } from '@/components/layout/Sidebar.svelte'
+  import DSSStatePanel from '@/components/dss/DSSStatePanel.svelte'
+  import DSSView from '@/components/dss/DSSView.svelte'
+  import ArchitectureDiagram from '@/components/esArchitecture/ArchitectureDiagram.svelte'
+  import ArchitectureInfoPanel from '@/components/esArchitecture/ArchitectureInfoPanel.svelte'
+  import ExpertSystemStatePanel from '@/components/expertSystem/ExpertSystemStatePanel.svelte'
+  import ScorecardView from '@/components/expertSystem/ScorecardView.svelte'
   import GeneticStatePanel from '@/components/genetic/GeneticStatePanel.svelte'
   import PopulationView from '@/components/genetic/PopulationView.svelte'
   import SelectionStatePanel from '@/components/selection/SelectionStatePanel.svelte'
@@ -60,6 +65,18 @@
   import type { QLearningStep } from '@/lib/algorithms/qlearning'
   import { naiveBayesPseudocode, playTennisDataset, runNaiveBayes } from '@/lib/algorithms/naiveBayes'
   import type { NBStep } from '@/lib/algorithms/naiveBayes'
+  import {
+    defaultAnswers,
+    expertSystemPseudocode,
+    patientProfiles,
+    runStrokeExpertSystem,
+    sameAnswers,
+  } from '@/lib/algorithms/expertSystem'
+  import type { Answers, ESStep } from '@/lib/algorithms/expertSystem'
+  import { flowPseudocode, runArchitectureFlow } from '@/lib/algorithms/esArchitecture'
+  import type { ArchStep, ComponentId, FlowId } from '@/lib/algorithms/esArchitecture'
+  import { defaultPreferences, dssPseudocode, runDSS } from '@/lib/algorithms/dss'
+  import type { DSSStep, Preferences } from '@/lib/algorithms/dss'
   import { ExecutionController } from '@/lib/execution/controller.svelte'
   import { fullscreenStore } from '@/lib/fullscreen.svelte'
   import { customGraphStore } from '@/lib/graph/customGraph.svelte'
@@ -75,6 +92,8 @@
   import { defaultDatabase, defaultQuery, prologPseudocode, solveProlog } from '@/lib/prolog'
   import type { ProofStep } from '@/lib/prolog'
   import { registerGlobalShortcuts } from '@/lib/shortcuts/shortcuts'
+  import { topicLabelKey } from '@/lib/topics'
+  import type { Topic } from '@/lib/topics'
 
   let selectedTopic = $state<Topic>(lastTopicStore.topic)
 
@@ -199,8 +218,53 @@
     naiveBayesController.load(runNaiveBayes())
   })
 
+  // --- Expert System Architecture ---
+  let archFlow = $state<FlowId>('build')
+  // A box the lecturer clicked to read about; null means the panel follows
+  // the current step's focus instead.
+  let archSelected = $state<ComponentId | null>(null)
+  const archController = new ExecutionController<ArchStep>()
+
+  $effect(() => {
+    archController.load(runArchitectureFlow(archFlow))
+  })
+
+  // Stepping moves the discussion on, so the panel goes back to explaining the step.
+  $effect(() => {
+    void archController.currentIndex
+    void archController.steps
+    archSelected = null
+  })
+
+  // --- Expert System (Stroke Risk Scorecard) ---
+  // Answers are the facts in working memory; editing them re-runs the
+  // inference from the start, just like choosing a preset patient.
+  let esAnswers = $state<Answers>({ ...defaultAnswers })
+  const selectedPatientId = $derived(
+    patientProfiles.find((p) => sameAnswers(p.answers, esAnswers))?.id ?? null,
+  )
+  const expertSystemController = new ExecutionController<ESStep>()
+
+  $effect(() => {
+    expertSystemController.load(runStrokeExpertSystem(esAnswers))
+  })
+
+  // --- Decision Support System ---
+  let dssPreferences = $state<Preferences>({ ...defaultPreferences })
+  const dssController = new ExecutionController<DSSStep>()
+
+  $effect(() => {
+    dssController.load(runDSS(dssPreferences))
+  })
+
   const controller = $derived.by(() => {
     switch (selectedTopic) {
+      case 'esArchitecture':
+        return archController
+      case 'expertSystem':
+        return expertSystemController
+      case 'dss':
+        return dssController
       case 'search':
         return searchController
       case 'prolog':
@@ -266,36 +330,19 @@
         return qLearningPseudocode
       case 'naiveBayes':
         return naiveBayesPseudocode
+      case 'esArchitecture':
+        return flowPseudocode[archFlow]
+      case 'expertSystem':
+        return expertSystemPseudocode
+      case 'dss':
+        return dssPseudocode
     }
   })
 
   const pseudocodeTitle = $derived.by(() => {
-    switch (selectedTopic) {
-      case 'search':
-        return localeStore.t(`algorithms.${algorithm.id}.name`)
-      case 'prolog':
-        return localeStore.t('topics.prolog')
-      case 'genetic':
-        return localeStore.t('topics.genetic')
-      case 'selection':
-        return localeStore.t('topics.selection')
-      case 'pso':
-        return localeStore.t('topics.pso')
-      case 'aco':
-        return localeStore.t('topics.aco')
-      case 'knn':
-        return localeStore.t('topics.knn')
-      case 'logreg':
-        return localeStore.t('topics.logreg')
-      case 'linreg':
-        return localeStore.t('topics.linreg')
-      case 'kmeans':
-        return localeStore.t('topics.kmeans')
-      case 'qlearning':
-        return localeStore.t('topics.qlearning')
-      case 'naiveBayes':
-        return localeStore.t('topics.naiveBayes')
-    }
+    if (selectedTopic === 'search') return localeStore.t(`algorithms.${algorithm.id}.name`)
+    if (selectedTopic === 'esArchitecture') return localeStore.t(`esArch.flow.${archFlow}`)
+    return localeStore.t(topicLabelKey(selectedTopic))
   })
 
   onMount(() => {
@@ -336,6 +383,13 @@
       {gaExamples}
       selectedGAExampleId={selectedGAExampleId}
       onSelectGAExample={(id) => (selectedGAExampleId = id)}
+      selectedArchFlow={archFlow}
+      onSelectArchFlow={(flow) => (archFlow = flow)}
+      {selectedPatientId}
+      onSelectPatient={(id) => {
+        const patient = patientProfiles.find((p) => p.id === id)
+        if (patient) esAnswers = { ...patient.answers }
+      }}
     />
   {/snippet}
 
@@ -397,6 +451,28 @@
       {#if acoController.current}
         <ACOGraphView state={acoController.current.state} />
       {/if}
+    {:else if selectedTopic === 'esArchitecture'}
+      {#if archController.current}
+        <ArchitectureDiagram
+          state={archController.current.state}
+          selected={archSelected}
+          onSelect={(id) => (archSelected = id)}
+        />
+      {/if}
+    {:else if selectedTopic === 'expertSystem'}
+      {#if expertSystemController.current}
+        <ScorecardView
+          state={expertSystemController.current.state}
+          onAnswer={(factor, level) => (esAnswers = { ...esAnswers, [factor]: level })}
+        />
+      {/if}
+    {:else if selectedTopic === 'dss'}
+      {#if dssController.current}
+        <DSSView
+          state={dssController.current.state}
+          onPreferencesChange={(p) => (dssPreferences = p)}
+        />
+      {/if}
     {:else if selectedTopic === 'knn'}
       {#if knnController.current}
         <KNNView state={knnController.current.state} />
@@ -454,6 +530,24 @@
         {:else if selectedTopic === 'aco'}
           {#if acoController.current}
             <ACOStatePanel state={acoController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'esArchitecture'}
+          {#if archController.current}
+            <ArchitectureInfoPanel
+              state={archController.current.state}
+              example={archController.current.example}
+              prolog={archController.current.prolog}
+              selected={archSelected}
+              onClearSelection={() => (archSelected = null)}
+            />
+          {/if}
+        {:else if selectedTopic === 'expertSystem'}
+          {#if expertSystemController.current}
+            <ExpertSystemStatePanel state={expertSystemController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'dss'}
+          {#if dssController.current}
+            <DSSStatePanel state={dssController.current.state} />
           {/if}
         {:else if selectedTopic === 'knn'}
           {#if knnController.current}
