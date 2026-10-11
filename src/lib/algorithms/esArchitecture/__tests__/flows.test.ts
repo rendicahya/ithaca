@@ -27,6 +27,9 @@ describe('runArchitectureFlow', () => {
   it('querying goes user → user interface → inference engine → recommended action', () => {
     const { firstVisit } = runArchitectureFlow('query').at(-1)!.state
     expect(firstVisit.user).toBe(1)
+    const [, describeCase, giveFacts] = runArchitectureFlow('query')
+    expect(describeCase.state.focus).toBe('user')
+    expect(giveFacts.state.focus).toBe('userInterface')
     expect(firstVisit.userInterface).toBeLessThan(firstVisit.inferenceEngine!)
     expect(firstVisit.inferenceEngine).toBeLessThan(firstVisit.recommendedAction!)
     expect(firstVisit.recommendedAction).toBeLessThan(firstVisit.explanationFacility!)

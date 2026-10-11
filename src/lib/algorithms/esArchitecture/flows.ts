@@ -103,8 +103,8 @@ const flowSpecs: Record<FlowId, StepSpec[]> = {
   ],
   query: [
     { line: 0, focus: 'consultationEnv', components: ['consultationEnv'], edges: [] },
-    { line: 1, focus: 'userInterface', components: ['user', 'userInterface'], edges: ['user-ui'] },
-    { line: 2, focus: 'user', components: ['user', 'userInterface'], edges: ['user-ui'] },
+    { line: 1, focus: 'user', components: ['user', 'userInterface'], edges: ['user-ui'] },
+    { line: 2, focus: 'userInterface', components: ['user', 'userInterface'], edges: ['user-ui'] },
     {
       line: 3,
       focus: 'blackboard',

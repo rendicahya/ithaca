@@ -28,25 +28,6 @@
 </script>
 
 <div class="flex h-full flex-col gap-3 overflow-y-auto p-4 scrollbar-thin">
-  <section class="rounded-md border border-node-current/50 bg-node-current/10 px-3 py-2.5">
-    <h3 class="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      {localeStore.t('esArch.exampleLabel')}
-    </h3>
-    <p class="whitespace-pre-line text-sm leading-relaxed">{localeStore.t(example)}</p>
-  </section>
-
-  {#if prolog}
-    <section>
-      <h3 class="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {localeStore.t('esArch.prologLabel')}
-      </h3>
-      <pre
-        class="overflow-x-auto rounded-md border border-border bg-muted/50 px-3 py-2.5 font-mono text-xs leading-relaxed scrollbar-thin">{localeStore.t(
-          prolog,
-        )}</pre>
-    </section>
-  {/if}
-
   <div class="flex items-center justify-between gap-2">
     <h3 class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
       {localeStore.t(selected ? 'esArch.selectedLabel' : 'esArch.focusLabel')}
@@ -88,6 +69,25 @@
     </h4>
     <p class="text-sm leading-relaxed">{localeStore.t(componentKey(shown, 'function'))}</p>
   </section>
+
+  <section class="rounded-md border border-node-current/50 bg-node-current/10 px-3 py-2.5">
+    <h4 class="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+      {localeStore.t('esArch.exampleLabel')}
+    </h4>
+    <p class="whitespace-pre-line text-sm leading-relaxed">{localeStore.t(example)}</p>
+  </section>
+
+  {#if prolog}
+    <section>
+      <h4 class="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {localeStore.t('esArch.prologLabel')}
+      </h4>
+      <pre
+        class="overflow-x-auto rounded-md border border-border bg-muted/50 px-3 py-2.5 font-mono text-xs leading-relaxed scrollbar-thin">{localeStore.t(
+          prolog,
+        )}</pre>
+    </section>
+  {/if}
 
   {#if subcomponents[shown]}
     <section>
