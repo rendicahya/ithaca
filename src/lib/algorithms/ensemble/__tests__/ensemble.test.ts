@@ -197,6 +197,14 @@ describe('ensemble methods — shared properties', () => {
       expect(method.run()).toEqual(method.run())
     })
 
+    it(`${method.id}: hides the query point during training`, () => {
+      // The query first appears on the step that evaluates the model(s) on it.
+      const firstQueryLine = { bagging: 5, boosting: 7, stacking: 7 }[method.id]
+      for (const step of method.run()) {
+        expect(step.state.queryVisible).toBe(step.activePseudocodeLine >= firstQueryLine)
+      }
+    })
+
     it(`${method.id}: steps are independent snapshots`, () => {
       const steps = method.run()
       expect(steps[0].state.done).toBe(false)

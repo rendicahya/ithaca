@@ -8,6 +8,12 @@ export type EnsembleMethodId = 'bagging' | 'boosting' | 'stacking'
 interface EnsembleStateBase {
   points: DataPoint[]
   query: Vec
+  /**
+   * False during training: the query point only appears once the algorithm
+   * actually evaluates the trained model(s) on it, so students don't read it
+   * as part of the training data.
+   */
+  queryVisible: boolean
   /** The classifier whose decision regions are shaded, or null for none. */
   focus: Classifier | null
   /** Caption for the shaded region, e.g. "h₂: y ≤ 6.00 → +1". */

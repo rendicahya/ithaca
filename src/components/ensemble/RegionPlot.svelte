@@ -5,7 +5,8 @@
 
   interface Props {
     points: DataPoint[]
-    query: { x: number; y: number }
+    /** Null hides the query point (e.g. while the models are still training). */
+    query: { x: number; y: number } | null
     /** Classifier whose decision regions are shaded; null leaves the background blank. */
     focus: Classifier | null
     misclassified?: string[]
@@ -85,8 +86,8 @@
     return Math.max(4, Math.min(26, base * Math.sqrt(scale[i] * points.length)))
   }
 
-  const qx = $derived(sx(query.x))
-  const qy = $derived(sy(query.y))
+  const qx = $derived(query ? sx(query.x) : 0)
+  const qy = $derived(query ? sy(query.y) : 0)
   const queryR = $derived(compact ? 12 : 10)
 </script>
 
@@ -164,18 +165,20 @@
     {/if}
   {/each}
 
-  <path
-    d={`M ${qx} ${qy - queryR} L ${qx + queryR} ${qy} L ${qx} ${qy + queryR} L ${qx - queryR} ${qy} Z`}
-    class={prediction === null
-      ? 'fill-node-current/30 stroke-node-current'
-      : prediction === 1
-        ? 'fill-node-start stroke-node-current'
-        : 'fill-node-goal stroke-node-current'}
-    stroke-width={compact ? 4 : 2.5}
-  />
-  {#if !compact}
-    <text x={qx} y={qy + queryR + 14} text-anchor="middle" class="fill-node-current font-mono text-[11px] font-semibold">
-      {localeStore.t('ensemble.query')}{prediction !== null ? ` → ${formatLabel(prediction)}` : ''}
-    </text>
+  {#if query}
+    <path
+      d={`M ${qx} ${qy - queryR} L ${qx + queryR} ${qy} L ${qx} ${qy + queryR} L ${qx - queryR} ${qy} Z`}
+      class={prediction === null
+        ? 'fill-node-current/30 stroke-node-current'
+        : prediction === 1
+          ? 'fill-node-start stroke-node-current'
+          : 'fill-node-goal stroke-node-current'}
+      stroke-width={compact ? 4 : 2.5}
+    />
+    {#if !compact}
+      <text x={qx} y={qy + queryR + 14} text-anchor="middle" class="fill-node-current font-mono text-[11px] font-semibold">
+        {localeStore.t('ensemble.query')}{prediction !== null ? ` → ${formatLabel(prediction)}` : ''}
+      </text>
+    {/if}
   {/if}
 </svg>

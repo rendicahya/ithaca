@@ -32,9 +32,11 @@
 <div class="flex h-full flex-col gap-4 overflow-y-auto p-4 scrollbar-thin">
   <div class="flex flex-wrap items-center gap-2">
     <Badge variant="default">{localeStore.t(`ensemble.method.${state.method}`)}</Badge>
-    <Badge variant="outline" class="font-mono">
-      {localeStore.t('ensemble.query')}: ({state.query.x}, {state.query.y})
-    </Badge>
+    {#if state.queryVisible}
+      <Badge variant="outline" class="font-mono">
+        {localeStore.t('ensemble.query')}: ({state.query.x}, {state.query.y})
+      </Badge>
+    {/if}
   </div>
 
   {#if state.method === 'bagging'}

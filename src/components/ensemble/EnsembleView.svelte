@@ -115,10 +115,12 @@
         <span class="inline-block size-3.5 rounded-full border-2 border-dashed border-destructive"></span>
         {localeStore.t('ensemble.legend.wrong')}
       </span>
-      <span class="flex items-center gap-1.5">
-        <span class="inline-block size-2.5 rotate-45 border-2 border-node-current"></span>
-        {localeStore.t('ensemble.query')}
-      </span>
+      {#if state.queryVisible}
+        <span class="flex items-center gap-1.5">
+          <span class="inline-block size-2.5 rotate-45 border-2 border-node-current"></span>
+          {localeStore.t('ensemble.query')}
+        </span>
+      {/if}
     </div>
     <p class="min-h-6 px-4 pt-1 font-mono text-sm font-semibold">
       {#if state.focusCaption}
@@ -132,7 +134,7 @@
     <div class="flex min-h-0 flex-1 items-center justify-center overflow-auto p-2">
       <RegionPlot
         points={state.points}
-        query={state.query}
+        query={state.queryVisible ? state.query : null}
         focus={state.focus}
         misclassified={state.misclassified}
         scale={state.method === 'boosting' ? state.weights : null}
@@ -159,7 +161,7 @@
           {#if card.classifier}
             <RegionPlot
               points={state.points}
-              query={state.query}
+              query={state.queryVisible ? state.query : null}
               focus={card.classifier}
               prediction={card.vote}
               compact

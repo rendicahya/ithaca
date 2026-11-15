@@ -28,6 +28,7 @@ export function runBagging(): EnsembleStep[] {
     method: 'bagging',
     points,
     query: { ...ensembleQuery },
+    queryVisible: false,
     focus: null,
     focusCaption: null,
     misclassified: [],
@@ -101,6 +102,7 @@ export function runBagging(): EnsembleStep[] {
 
   state.current = null
   state.sampleCounts = null
+  state.queryVisible = true
   for (const model of state.models) model.vote = predictStump(model.stump, state.query)
 
   const ensemble: Classifier = { kind: 'majority', members: state.models.map((m) => m.stump) }

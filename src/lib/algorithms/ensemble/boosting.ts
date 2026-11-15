@@ -30,6 +30,7 @@ export function runBoosting(): EnsembleStep[] {
     method: 'boosting',
     points,
     query: { ...ensembleQuery },
+    queryVisible: false,
     focus: null,
     focusCaption: null,
     misclassified: [],
@@ -143,6 +144,7 @@ export function runBoosting(): EnsembleStep[] {
   state.current = null
   state.previousWeights = null
   state.score = score
+  state.queryVisible = true
   state.focus = ensemble
   state.focusCaption = msg('ensemble.caption.boosting', { rounds: BOOSTING_ROUNDS })
   state.misclassified = points.filter((p) => predict(ensemble, p) !== p.label).map((p) => p.id)

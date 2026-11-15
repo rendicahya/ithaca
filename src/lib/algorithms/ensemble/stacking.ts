@@ -66,6 +66,7 @@ export function runStacking(): EnsembleStep[] {
     method: 'stacking',
     points,
     query: { ...ensembleQuery },
+    queryVisible: false,
     focus: null,
     focusCaption: null,
     misclassified: [],
@@ -163,6 +164,7 @@ export function runStacking(): EnsembleStep[] {
     traceEntry: msg('ensemble.stacking.retrain.trace'),
   })
 
+  state.queryVisible = true
   state.baseModels.forEach((model) => (model.vote = predict(model.classifier as Classifier, state.query)))
   const z = state.baseModels.map((m) => m.vote as Label)
 
