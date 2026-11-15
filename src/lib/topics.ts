@@ -14,6 +14,7 @@ export type Topic =
   | 'linreg'
   | 'kmeans'
   | 'qlearning'
+  | 'ensemble'
 
 export type CategoryId =
   | 'search'
@@ -24,6 +25,7 @@ export type CategoryId =
   | 'regression'
   | 'clustering'
   | 'reinforcement'
+  | 'hybrid'
 
 export interface TopicCategory {
   id: CategoryId
@@ -52,6 +54,7 @@ export const topicCategories: TopicCategory[] = [
   { id: 'regression', labelKey: 'categories.regression', topics: ['linreg'] },
   { id: 'clustering', labelKey: 'categories.clustering', topics: ['kmeans'] },
   { id: 'reinforcement', labelKey: 'categories.reinforcement', topics: ['qlearning'] },
+  { id: 'hybrid', labelKey: 'categories.hybrid', topics: ['ensemble'] },
 ]
 
 export const allTopics: Topic[] = topicCategories.flatMap((c) => c.topics)

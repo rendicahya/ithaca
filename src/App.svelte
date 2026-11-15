@@ -77,6 +77,10 @@
   import type { ArchStep, ComponentId, FlowId } from '@/lib/algorithms/esArchitecture'
   import { defaultPreferences, dssPseudocode, runDSS } from '@/lib/algorithms/dss'
   import type { DSSStep, Preferences } from '@/lib/algorithms/dss'
+  import { ensembleMethods, getEnsembleMethod } from '@/lib/algorithms/ensemble'
+  import type { EnsembleMethodId, EnsembleStep } from '@/lib/algorithms/ensemble'
+  import EnsembleStatePanel from '@/components/ensemble/EnsembleStatePanel.svelte'
+  import EnsembleView from '@/components/ensemble/EnsembleView.svelte'
   import { ExecutionController } from '@/lib/execution/controller.svelte'
   import { fullscreenStore } from '@/lib/fullscreen.svelte'
   import { customGraphStore } from '@/lib/graph/customGraph.svelte'
@@ -257,6 +261,15 @@
     dssController.load(runDSS(dssPreferences))
   })
 
+  // --- Ensemble Learning (bagging / boosting / stacking) ---
+  let selectedEnsembleMethodId = $state<EnsembleMethodId>('bagging')
+  const ensembleMethod = $derived(getEnsembleMethod(selectedEnsembleMethodId))
+  const ensembleController = new ExecutionController<EnsembleStep>()
+
+  $effect(() => {
+    ensembleController.load(ensembleMethod.run())
+  })
+
   const controller = $derived.by(() => {
     switch (selectedTopic) {
       case 'esArchitecture':
@@ -265,6 +278,8 @@
         return expertSystemController
       case 'dss':
         return dssController
+      case 'ensemble':
+        return ensembleController
       case 'search':
         return searchController
       case 'prolog':
@@ -336,12 +351,15 @@
         return expertSystemPseudocode
       case 'dss':
         return dssPseudocode
+      case 'ensemble':
+        return ensembleMethod.pseudocode
     }
   })
 
   const pseudocodeTitle = $derived.by(() => {
     if (selectedTopic === 'search') return localeStore.t(`algorithms.${algorithm.id}.name`)
     if (selectedTopic === 'esArchitecture') return localeStore.t(`esArch.flow.${archFlow}`)
+    if (selectedTopic === 'ensemble') return localeStore.t(ensembleMethod.nameKey)
     return localeStore.t(topicLabelKey(selectedTopic))
   })
 
@@ -385,6 +403,9 @@
       onSelectGAExample={(id) => (selectedGAExampleId = id)}
       selectedArchFlow={archFlow}
       onSelectArchFlow={(flow) => (archFlow = flow)}
+      {ensembleMethods}
+      {selectedEnsembleMethodId}
+      onSelectEnsembleMethod={(id) => (selectedEnsembleMethodId = id)}
       {selectedPatientId}
       onSelectPatient={(id) => {
         const patient = patientProfiles.find((p) => p.id === id)
@@ -493,6 +514,10 @@
       {#if qLearningController.current}
         <QLearningView state={qLearningController.current.state} />
       {/if}
+    {:else if selectedTopic === 'ensemble'}
+      {#if ensembleController.current}
+        <EnsembleView state={ensembleController.current.state} />
+      {/if}
     {:else if naiveBayesController.current}
       <NaiveBayesView state={naiveBayesController.current.state} />
     {/if}
@@ -568,6 +593,10 @@
         {:else if selectedTopic === 'qlearning'}
           {#if qLearningController.current}
             <QLearningStatePanel state={qLearningController.current.state} />
+          {/if}
+        {:else if selectedTopic === 'ensemble'}
+          {#if ensembleController.current}
+            <EnsembleStatePanel state={ensembleController.current.state} />
           {/if}
         {:else if naiveBayesController.current}
           <NaiveBayesStatePanel

@@ -5,11 +5,13 @@
     Boxes,
     ClipboardCheck,
     Dna,
+    Layers,
     Route,
     Tags,
     TrendingUp,
   } from '@lucide/svelte'
 
+  import type { EnsembleMethod, EnsembleMethodId } from '@/lib/algorithms/ensemble'
   import { flowIds } from '@/lib/algorithms/esArchitecture'
   import type { FlowId } from '@/lib/algorithms/esArchitecture'
   import type { PatientId } from '@/lib/algorithms/expertSystem'
@@ -42,6 +44,9 @@
     onSelectPatient: (id: PatientId) => void
     selectedArchFlow: FlowId
     onSelectArchFlow: (id: FlowId) => void
+    ensembleMethods: EnsembleMethod[]
+    selectedEnsembleMethodId: EnsembleMethodId
+    onSelectEnsembleMethod: (id: EnsembleMethodId) => void
   }
 
   let {
@@ -62,9 +67,12 @@
     onSelectPatient,
     selectedArchFlow,
     onSelectArchFlow,
+    ensembleMethods,
+    selectedEnsembleMethodId,
+    onSelectEnsembleMethod,
   }: Props = $props()
 
-  const topicsWithOptions: Topic[] = ['search', 'genetic', 'esArchitecture', 'expertSystem']
+  const topicsWithOptions: Topic[] = ['search', 'genetic', 'esArchitecture', 'expertSystem', 'ensemble']
 
   const categoryIcons: Record<CategoryId, typeof Route> = {
     search: Route,
@@ -75,6 +83,7 @@
     regression: TrendingUp,
     clustering: Boxes,
     reinforcement: Bot,
+    hybrid: Layers,
   }
 
   let navElement: HTMLElement | undefined
@@ -215,6 +224,24 @@
             {localeStore.t('expertSystem.patient.custom')}
           </li>
         {/if}
+      </ul>
+    </div>
+  {:else if topic === 'ensemble'}
+    <div>
+      {@render optionGroupHeading('sidebar.ensembleMethod')}
+      <ul class="space-y-0.5">
+        {#each ensembleMethods as method (method.id)}
+          <li>
+            <button
+              type="button"
+              class={optionButtonClass(selectedEnsembleMethodId === method.id)}
+              aria-current={selectedEnsembleMethodId === method.id ? 'true' : undefined}
+              onclick={() => onSelectEnsembleMethod(method.id)}
+            >
+              {localeStore.t(method.nameKey)}
+            </button>
+          </li>
+        {/each}
       </ul>
     </div>
   {/if}
